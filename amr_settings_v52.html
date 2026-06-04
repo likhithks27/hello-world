@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>AMR Settings</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap');
+:root{--blue:#004791;--green:#009E73;--red:#D55E00;--border:#E0E0E0}
+body{font-family:"Figtree","Open Sans","Segoe UI",Arial,sans-serif;background:#f0f4f8;margin:0;padding:30px;color:#1a1a2e}
+.container{max-width:1050px;margin:auto;background:white;padding:28px;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+h1{margin-top:0}label{font-weight:600;display:block;margin-top:14px;margin-bottom:6px}
+input,textarea{width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;box-sizing:border-box}
+textarea{height:220px;font-family:monospace}
+button{padding:10px 14px;border:0;border-radius:8px;background:var(--blue);color:white;cursor:pointer;font-size:14px;margin-top:12px;margin-right:8px}
+.secondary{background:#546e7a}.success{background:var(--green)}.danger{background:var(--red)}
+pre{background:#0d1117;color:#79e8a2;padding:14px;border-radius:8px;overflow:auto;max-height:380px;white-space:pre-wrap}
+.info{background:#E3F2FD;padding:12px;border-radius:8px;margin:14px 0;border-left:3px solid var(--blue)}
+</style></head><body><div class="container">
+<h1>AMR Settings</h1>
+<div class="info">Map ID is fixed to <b>6</b>. The learning UI automatically refreshes station coordinates from AMR positions before generating/running.</div>
+<button class="secondary" onclick="location.href='/warehouse-logistics-learning-v52'">&#8592; Back to Learning UI</button>
+<button onclick="saveData()">&#128190; Save Data</button>
+<label>Base URL</label><input id="baseUrl" value="https://sweden.kth.wheelme-web.com">
+<label>Access Token</label><input id="token" type="text" placeholder="Paste token only, without Bearer" oncopy="return false" oncut="return false">
+<label>Map ID</label><input id="mapId" value="6" disabled>
+<label>Robot ID</label><input id="robotId" value="7D36702004503133">
+<label>Component Station Mapping</label><textarea id="stationMap">{
+  "A": {"positionId": 124,"stationName": "Station_1","x": 1.2549037,"y": -1.0600168,"theta": 0.0087717045},
+  "B": {"positionId": 125,"stationName": "Station_2","x": 3.1199632,"y": -0.95856994,"theta": 0.027964735},
+  "C": {"positionId": 119,"stationName": "cobot","x": 4.4920683,"y": 0.44582638,"theta": -0.0017761972},
+  "D": {"positionId": 131,"stationName": "Station_4","x": 2.1256135,"y": 0.06399634,"theta": -3.1310234},
+  "E": {"positionId": 132,"stationName": "Station_5","x": 0.28054932,"y": 0.14738907,"theta": -3.1292002}
+}</textarea>
+<label>Delivery Station Mapping</label><textarea id="deliveryMap">{
+  "Delivery_1": {"positionId": 133,"stationName": "Delivary_1","x": -1.9992679,"y": 0.033076156,"theta": 0.051191278}
+}</textarea>
+<div>
+  <button class="success" onclick="saveSettings()">Save Settings</button>
+  <button onclick="refreshPositions()">Refresh Positions From API</button>
+  <button onclick="api('maps')">Get Maps</button>
+  <button onclick="api('positions')">Get Positions</button>
+  <button onclick="api('robots')">Get Robots</button>
+  <button onclick="testA()">Test Navigate to A</button>
+  <button onclick="testD1()">Test Navigate to Delivery 1</button>
+  <button class="danger" onclick="api('stop')">Stop Robot</button>
+</div>
+<h2>Output</h2><pre id="output">No request yet.</pre>
+<script>
+const PROXY_URL="/wheelme-v52/proxy";
+function _dl(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+function _vv(rfid){return rfid==="Live"?"RFID live feedback":rfid==="Logged"?"RFID logged":"none";}
+function _pd(path){let d=0;for(let i=1;i<(path||[]).length;i++){const a=path[i-1],b=path[i];if(a&&b&&a.x!=null&&b.x!=null){const dx=a.x-b.x,dy=a.y-b.y;d+=Math.sqrt(dx*dx+dy*dy);}}return Math.round(d*100)/100;}
+function _buildSegments(r,sm,dm){const seq=r.fullSequence||[],path=r.path||[],events=r.events||[];if(!seq.length)return[];const gi=s=>sm[s]||dm[s]||null;const segments=[];for(let i=0;i<seq.length;i++){const fk=i===0?r.deliveryStation:seq[i-1],tk=seq[i];const fi=gi(fk),ti=gi(tk);const pp=i>0?events.find(e=>e.type==="component_picked"&&e.step===i):null;const tp=events.find(e=>e.type==="component_picked"&&e.step===i+1);const t0=pp?(pp.time||0):0,t1=tp?(tp.time||r.elapsed||0):(r.elapsed||0);const sp=path.filter(p=>(p.elapsed??0)>=t0&&(p.elapsed??0)<=t1);const sd=_pd(sp);let sl=null;if(fi&&ti&&fi.x!=null&&ti.x!=null){const dx=fi.x-ti.x,dy=fi.y-ti.y;sl=Math.round(Math.sqrt(dx*dx+dy*dy)*1000)/1000;}segments.push({step:i+1,from:fk,fromStationName:fi?fi.stationName:null,fromPositionId:fi?(fi.positionId??null):null,fromX:fi?(fi.x??null):null,fromY:fi?(fi.y??null):null,to:tk,toStationName:ti?ti.stationName:null,toPositionId:ti?(ti.positionId??null):null,toX:ti?(ti.x??null):null,toY:ti?(ti.y??null):null,startElapsedSeconds:t0,endElapsedSeconds:t1,durationSeconds:t1-t0,actualDistanceMeters:Math.round(sd*1000)/1000,straightLineDistanceMeters:sl,pathPointCount:sp.length});}return segments;}
+function buildExport(s){if(!s)return null;const cfg=(typeof getConfig==="function")?getConfig():(JSON.parse(localStorage.getItem("wheelmeConfigV52")||"{}"));const sm=cfg.stationMap||{},dm=cfg.deliveryMap||{};const posMap={};Object.entries(sm).forEach(([k,v])=>{posMap[v.positionId]={label:k,type:"station",stationName:v.stationName,x:v.x,y:v.y,theta:v.theta};});Object.entries(dm).forEach(([k,v])=>{posMap[v.positionId]={label:k,type:"delivery",stationName:v.stationName,x:v.x,y:v.y,theta:v.theta};});const runs=(s.savedRuns||[]).map(r=>{const rawPath=r.path||[];const fullPath=rawPath.map(p=>({timestamp:p.timestamp||null,elapsedSeconds:p.elapsed??null,x:p.x??null,y:p.y??null,theta:p.theta??null,robotState:p.state||null,currentPositionId:p.currentPositionId??null,navigatingToPositionId:p.navigatingToPositionId??null,lastNavigatedPositionId:p.lastNavigatedPositionId??null}));const allEvents=(r.events||[]).map(e=>{const si=sm[e.station]||dm[e.station]||{};return{type:e.type,step:e.step??null,component:e.component||null,station:e.station||null,stationName:si.stationName||null,positionId:si.positionId??null,stationX:si.x??null,stationY:si.y??null,stationTheta:si.theta??null,elapsedSeconds:e.time??null,timestamp:e.timestamp||null,rfidMode:e.mode||null,rfidResult:e.result||null};});const picks=allEvents.filter(e=>e.type==="component_picked").map(e=>{const sc=allEvents.find(x=>x.type==="rfid_scan"&&x.step===e.step);return{step:e.step,component:e.component,station:e.station,stationName:e.stationName,positionId:e.positionId,stationX:e.stationX,stationY:e.stationY,elapsedSeconds:e.elapsedSeconds,timestamp:e.timestamp,rfid:sc?{result:sc.rfidResult,mode:sc.rfidMode,timestamp:sc.timestamp}:null};});const td=_pd(rawPath);const segments=_buildSegments(r,sm,dm);return{id:r.id,pairId:r.pairId||null,navigation:r.support==="Yes"?"AMR":"Manual",navigationSupport:r.support,verification:_vv(r.rfid),rfidMode:r.rfid||"No",route:r.routeType==="optimised"?"optimised":"standard",routeType:r.routeType||null,pickingMethod:r.method,components:r.components||[],deliveryStation:r.deliveryStation,sequence:r.fullSequence||[],status:r.status,durationSeconds:r.elapsed||0,travelDistanceMeters:td,startedAt:r.startedAt||null,completedAt:r.completedAt||null,picks,events:allEvents,segments,path:fullPath};});const amr=runs.filter(r=>r.navigation==="AMR"),man=runs.filter(r=>r.navigation==="Manual");const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null;return{exportVersion:"v52",exportedAt:new Date().toISOString(),session:{id:s.sessionId,startedAt:s.createdAt||null,started:s.dateLabel||null,useAMR:s.useAmr!=="No",verificationMode:_vv(s.rfidMode),rfidMode:s.rfidMode||"No",setup:s.setup||null},stationMap:sm,deliveryMap:dm,positionIdMap:posMap,robotConfig:{robotId:cfg.robotId||null,baseUrl:cfg.baseUrl||null,mapId:cfg.mapId||"6"},summary:{totalRuns:runs.length,completedRuns:runs.filter(r=>r.status==="completed").length,stoppedRuns:runs.filter(r=>r.status==="stopped").length,amrRuns:amr.length,manualRuns:man.length,avgDurationSeconds:avg(runs.map(r=>r.durationSeconds).filter(x=>x>0)),avgTravelMeters:avg(runs.map(r=>r.travelDistanceMeters).filter(x=>x>0)),amrAvgDurationSeconds:avg(amr.map(r=>r.durationSeconds).filter(x=>x>0)),manualAvgDurationSeconds:avg(man.map(r=>r.durationSeconds).filter(x=>x>0)),amrAvgTravelMeters:avg(amr.map(r=>r.travelDistanceMeters).filter(x=>x>0)),manualAvgTravelMeters:avg(man.map(r=>r.travelDistanceMeters).filter(x=>x>0))},runs};}
+function saveData(){const s=JSON.parse(localStorage.getItem("learningSessionV52")||"null");if(!s||!s.savedRuns||!s.savedRuns.length){alert("No saved runs in this session yet. Complete a run first.");return;}const ex=buildExport(s);_dl(s.sessionId+".json",JSON.stringify(ex,null,2),"application/json");const rows=[["id","pairId","navigation","rfidMode","route","pickingMethod","sequence","status","durationSeconds","travelDistanceMeters","pickCount","eventCount","pathPoints","segmentCount"]];ex.runs.forEach(r=>rows.push([r.id,r.pairId||"",r.navigation,r.rfidMode,r.route,r.pickingMethod,r.sequence.join(" > "),r.status,r.durationSeconds,r.travelDistanceMeters,(r.picks||[]).length,(r.events||[]).length,(r.path||[]).length,(r.segments||[]).length]));_dl(s.sessionId+".csv",rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),"text/csv");}
+const NAME_TO_COMPONENT={"Station_1":"A","Station_2":"B","cobot":"C","Station_4":"D","Station_5":"E"};
+const NAME_TO_DELIVERY={"Delivary_1":"Delivery_1"};
+function out(o){document.getElementById("output").textContent=typeof o==="string"?o:JSON.stringify(o,null,2)}
+function j(id,name){try{return JSON.parse(document.getElementById(id).value)}catch(e){out({error:name+" invalid JSON",details:String(e)});throw e}}
+function cfg(){return{baseUrl:baseUrl.value.trim(),token:token.value.trim().replace(/^Bearer\s+/i,""),mapId:"6",robotId:robotId.value.trim(),stationMap:j("stationMap","Station map"),deliveryMap:j("deliveryMap","Delivery map")}}
+function saveSettings(){const c=cfg();localStorage.setItem("wheelmeConfigV52",JSON.stringify(c));out({status:"Settings saved",tokenLength:c.token.length,mapId:c.mapId,robotId:c.robotId,components:Object.keys(c.stationMap),delivery:Object.keys(c.deliveryMap)})}
+function load(){const s=JSON.parse(localStorage.getItem("wheelmeConfigV52")||"{}");if(s.baseUrl)baseUrl.value=s.baseUrl;if(s.token)token.value=s.token;if(s.robotId)robotId.value=s.robotId;if(s.stationMap)stationMap.value=JSON.stringify(s.stationMap,null,2);if(s.deliveryMap)deliveryMap.value=JSON.stringify(s.deliveryMap,null,2)}
+async function api(action,extra={}){const c=cfg();if(!c.token){out({error:"Token field is empty"});return null}const body={action,baseUrl:c.baseUrl,token:c.token,mapId:"6",robotId:c.robotId,...extra};out({status:"Request started",action,tokenLength:c.token.length});try{const r=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const t=await r.text();let d;try{d=JSON.parse(t)}catch(e){d={rawText:t}}out({httpStatus:r.status,response:d});return d}catch(e){out({error:"Browser fetch failed",details:String(e)});return null}}
+async function apiRaw(action,extra={}){const c=cfg();if(!c.token){out({error:"Token field is empty"});return null}const r=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,baseUrl:c.baseUrl,token:c.token,mapId:"6",robotId:c.robotId,...extra})});const t=await r.text();try{return JSON.parse(t)}catch(e){return{rawText:t}}}
+async function refreshPositions(){const c=cfg();const data=await apiRaw("positions");if(!Array.isArray(data)){out({error:"Positions response was not an array",response:data});return;}const sm=c.stationMap,dm=c.deliveryMap;data.forEach(p=>{const comp=NAME_TO_COMPONENT[p.name];const del=NAME_TO_DELIVERY[p.name];if(comp)sm[comp]={positionId:p.id,stationName:p.name,x:p.position.x,y:p.position.y,theta:p.position.theta};if(del)dm[del]={positionId:p.id,stationName:p.name,x:p.position.x,y:p.position.y,theta:p.position.theta};});stationMap.value=JSON.stringify(sm,null,2);deliveryMap.value=JSON.stringify(dm,null,2);localStorage.setItem("wheelmeConfigV52",JSON.stringify({...c,stationMap:sm,deliveryMap:dm}));out({status:"Positions refreshed and saved from API",stationMap:sm,deliveryMap:dm});}
+function testA(){const c=cfg();api("navigate",{positionId:c.stationMap.A.positionId})}
+function testD1(){const c=cfg();api("navigate",{positionId:c.deliveryMap.Delivery_1.positionId})}
+load();
+</script></div></body></html>
