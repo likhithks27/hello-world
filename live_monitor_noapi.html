@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Live Monitor</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap');
+:root{--blue:#004791;--red:#D55E00;--border:#E0E0E0}
+body{font-family:"Figtree","Open Sans","Segoe UI",Arial,sans-serif;background:#f0f4f8;margin:0;padding:24px;color:#1a1a2e}
+.container{max-width:1680px;margin:auto;background:white;padding:24px;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+h1{margin:0 0 4px;font-size:22px}
+.sub{font-size:13px;color:#555;margin:0 0 16px}
+.hd{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+button{padding:9px 14px;border:0;border-radius:8px;background:var(--blue);color:white;cursor:pointer;font-size:13px;font-weight:500}
+.sec{background:#546e7a}.dng{background:var(--red)}
+.panel{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px}
+.panel h2{margin:0 0 10px;font-size:16px}
+pre{background:#0d1117;color:#79e8a2;padding:12px;border-radius:8px;overflow:auto;max-height:300px;white-space:pre-wrap;font-size:12px}
+#statusTxt{font-size:13px;color:#555;margin-bottom:8px}
+canvas{border:1px solid var(--border);border-radius:12px;display:block;width:100%;aspect-ratio:1560/640}
+#legend{font-size:13px;min-height:20px}
+.run-toggles{display:flex;flex-flow:row wrap;gap:8px;margin:8px 0 12px}
+.rt{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--border);border-radius:20px;background:white;font-size:13px;cursor:pointer}
+.rt input{width:16px;height:16px;cursor:pointer}
+.rt .sw{width:22px;height:5px;border-radius:3px;flex-shrink:0}
+.rt.live{border-color:#7B2D8B;background:#faf3fc;font-weight:600}
+.rt-hint{font-size:12px;color:#777;margin:2px 0 4px}
+.obs-card{background:#EEF4FF;border:1px solid #C8D9F5;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.obs-card h3{margin:0 0 8px;font-size:14px;color:#1a3c6e}
+.obs-card ul{margin:0;padding-left:18px;font-size:13px;color:#3a4a6e;line-height:1.7}
+</style></head>
+<body><div class="container">
+<h1>&#128249; Warehouse Logistics Live Monitor</h1>
+<p class="sub">AMR path trace with direction arrows. Stations scale to fit the canvas.</p>
+
+<div class="obs-card">
+  <h3>&#128064; What to Observe During the Run</h3>
+  <ul>
+    <li>Do AMR and manual paths follow the same route, or does the AMR choose a shorter path?</li>
+    <li>Where does the path loop back, which shows backtracking that wastes time.</li>
+    <li>Compare total path <b>length</b> between AMR and manual runs of the same pair.</li>
+    <li>Arrows show direction of travel. Are there any detours?</li>
+  </ul>
+</div>
+
+<div class="hd">
+  <button onclick="location.href='/warehouse-logistics-learning-v52'">&#8592; Back to Run UI</button>
+  <button onclick="saveData()">&#128190; Save Data</button>
+  <button class="sec" onclick="clearTrace()">Clear Display</button>
+</div>
+<div class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px">
+    <h2 style="margin:0">Path Trace</h2>
+    <div id="legend">No runs yet.</div>
+  </div>
+  <div class="rt-hint">By default only the <b>live run</b> and the <b>previous run</b> are shown. Tick others to compare.</div>
+  <div id="runToggles" class="run-toggles"></div>
+  <canvas id="canvas" width="1560" height="640"></canvas>
+</div>
+<div class="panel" style="margin-top:16px">
+  <h2>Live AMR Data</h2>
+  <div id="statusTxt">Waiting for run or API check.</div>
+  <pre id="raw">No data yet.</pre>
+</div>
+
+<script>
+const CONFIG_KEY="wheelmeConfigV52",SESSION_KEY="learningSessionV52",LIVE_RUN_KEY="warehouseLiveActiveRunV52";
+function _dl(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+function _vv(rfid){return rfid==="Live"?"RFID live feedback":rfid==="Logged"?"RFID logged":"none";}
+function _pd(path){let d=0;for(let i=1;i<(path||[]).length;i++){const a=path[i-1],b=path[i];if(a&&b&&a.x!=null&&b.x!=null){const dx=a.x-b.x,dy=a.y-b.y;d+=Math.sqrt(dx*dx+dy*dy);}}return Math.round(d*100)/100;}
+function _buildSegments(r,sm,dm){const seq=r.fullSequence||[],path=r.path||[],events=r.events||[];if(!seq.length)return[];const gi=s=>sm[s]||dm[s]||null;const segments=[];for(let i=0;i<seq.length;i++){const fk=i===0?r.deliveryStation:seq[i-1],tk=seq[i];const fi=gi(fk),ti=gi(tk);const pp=i>0?events.find(e=>e.type==="component_picked"&&e.step===i):null;const tp=events.find(e=>e.type==="component_picked"&&e.step===i+1);const t0=pp?(pp.time||0):0,t1=tp?(tp.time||r.elapsed||0):(r.elapsed||0);const sp=path.filter(p=>(p.elapsed??0)>=t0&&(p.elapsed??0)<=t1);const sd=_pd(sp);let sl=null;if(fi&&ti&&fi.x!=null&&ti.x!=null){const dx=fi.x-ti.x,dy=fi.y-ti.y;sl=Math.round(Math.sqrt(dx*dx+dy*dy)*1000)/1000;}segments.push({step:i+1,from:fk,fromStationName:fi?fi.stationName:null,fromPositionId:fi?(fi.positionId??null):null,fromX:fi?(fi.x??null):null,fromY:fi?(fi.y??null):null,to:tk,toStationName:ti?ti.stationName:null,toPositionId:ti?(ti.positionId??null):null,toX:ti?(ti.x??null):null,toY:ti?(ti.y??null):null,startElapsedSeconds:t0,endElapsedSeconds:t1,durationSeconds:t1-t0,actualDistanceMeters:Math.round(sd*1000)/1000,straightLineDistanceMeters:sl,pathPointCount:sp.length});}return segments;}
+function buildExport(s){if(!s)return null;const cfg=(typeof getConfig==="function")?getConfig():(JSON.parse(localStorage.getItem("wheelmeConfigV52")||"{}"));const sm=cfg.stationMap||{},dm=cfg.deliveryMap||{};const posMap={};Object.entries(sm).forEach(([k,v])=>{posMap[v.positionId]={label:k,type:"station",stationName:v.stationName,x:v.x,y:v.y,theta:v.theta};});Object.entries(dm).forEach(([k,v])=>{posMap[v.positionId]={label:k,type:"delivery",stationName:v.stationName,x:v.x,y:v.y,theta:v.theta};});const runs=(s.savedRuns||[]).map(r=>{const rawPath=r.path||[];const fullPath=rawPath.map(p=>({timestamp:p.timestamp||null,elapsedSeconds:p.elapsed??null,x:p.x??null,y:p.y??null,theta:p.theta??null,robotState:p.state||null,currentPositionId:p.currentPositionId??null,navigatingToPositionId:p.navigatingToPositionId??null,lastNavigatedPositionId:p.lastNavigatedPositionId??null}));const allEvents=(r.events||[]).map(e=>{const si=sm[e.station]||dm[e.station]||{};return{type:e.type,step:e.step??null,component:e.component||null,station:e.station||null,stationName:si.stationName||null,positionId:si.positionId??null,stationX:si.x??null,stationY:si.y??null,stationTheta:si.theta??null,elapsedSeconds:e.time??null,timestamp:e.timestamp||null,rfidMode:e.mode||null,rfidResult:e.result||null};});const picks=allEvents.filter(e=>e.type==="component_picked").map(e=>{const sc=allEvents.find(x=>x.type==="rfid_scan"&&x.step===e.step);return{step:e.step,component:e.component,station:e.station,stationName:e.stationName,positionId:e.positionId,stationX:e.stationX,stationY:e.stationY,elapsedSeconds:e.elapsedSeconds,timestamp:e.timestamp,rfid:sc?{result:sc.rfidResult,mode:sc.rfidMode,timestamp:sc.timestamp}:null};});const td=_pd(rawPath);const segments=_buildSegments(r,sm,dm);return{id:r.id,pairId:r.pairId||null,navigation:r.support==="Yes"?"AMR":"Manual",navigationSupport:r.support,verification:_vv(r.rfid),rfidMode:r.rfid||"No",route:r.routeType==="optimised"?"optimised":"standard",routeType:r.routeType||null,pickingMethod:r.method,components:r.components||[],deliveryStation:r.deliveryStation,sequence:r.fullSequence||[],status:r.status,durationSeconds:r.elapsed||0,travelDistanceMeters:td,startedAt:r.startedAt||null,completedAt:r.completedAt||null,picks,events:allEvents,segments,path:fullPath};});const amr=runs.filter(r=>r.navigation==="AMR"),man=runs.filter(r=>r.navigation==="Manual");const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null;return{exportVersion:"v52",exportedAt:new Date().toISOString(),session:{id:s.sessionId,startedAt:s.createdAt||null,started:s.dateLabel||null,useAMR:s.useAmr!=="No",verificationMode:_vv(s.rfidMode),rfidMode:s.rfidMode||"No",setup:s.setup||null},stationMap:sm,deliveryMap:dm,positionIdMap:posMap,robotConfig:{robotId:cfg.robotId||null,baseUrl:cfg.baseUrl||null,mapId:cfg.mapId||"6"},summary:{totalRuns:runs.length,completedRuns:runs.filter(r=>r.status==="completed").length,stoppedRuns:runs.filter(r=>r.status==="stopped").length,amrRuns:amr.length,manualRuns:man.length,avgDurationSeconds:avg(runs.map(r=>r.durationSeconds).filter(x=>x>0)),avgTravelMeters:avg(runs.map(r=>r.travelDistanceMeters).filter(x=>x>0)),amrAvgDurationSeconds:avg(amr.map(r=>r.durationSeconds).filter(x=>x>0)),manualAvgDurationSeconds:avg(man.map(r=>r.durationSeconds).filter(x=>x>0)),amrAvgTravelMeters:avg(amr.map(r=>r.travelDistanceMeters).filter(x=>x>0)),manualAvgTravelMeters:avg(man.map(r=>r.travelDistanceMeters).filter(x=>x>0))},runs};}
+function saveData(){const s=JSON.parse(localStorage.getItem("learningSessionV52")||"null");if(!s||!s.savedRuns||!s.savedRuns.length){alert("No saved runs in this session yet. Complete a run first.");return;}const ex=buildExport(s);_dl(s.sessionId+".json",JSON.stringify(ex,null,2),"application/json");const rows=[["id","pairId","navigation","rfidMode","route","pickingMethod","sequence","status","durationSeconds","travelDistanceMeters","pickCount","eventCount","pathPoints","segmentCount"]];ex.runs.forEach(r=>rows.push([r.id,r.pairId||"",r.navigation,r.rfidMode,r.route,r.pickingMethod,r.sequence.join(" > "),r.status,r.durationSeconds,r.travelDistanceMeters,(r.picks||[]).length,(r.events||[]).length,(r.path||[]).length,(r.segments||[]).length]));_dl(s.sessionId+".csv",rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),"text/csv");}
+let localTrace=[],hiddenClearedAt=0;
+const COLORS=["#004791","#D55E00","#009E73","#CC79A7","#E69F00","#56B4E9","#7B2D8B","#8B4513"];
+let userSet={};        // trace id -> explicit user show/hide choice
+let lastCtrlSig="";    // signature of run set, to avoid rebuilding checkboxes every tick
+
+function getConfig(){let c=JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}");c.mapId="6";return c}
+
+
+
+function extractRobot(data){const cfg=getConfig();const list=Array.isArray(data)?data:(data.response||data);if(Array.isArray(list))return list.find(r=>String(r.id)===String(cfg.robotId))||list[0];return data}
+
+function activeRun(){try{return JSON.parse(localStorage.getItem(LIVE_RUN_KEY)||"null")}catch(e){return null}}
+
+function savedRuns(){const s=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");return(s&&s.savedRuns?s.savedRuns:[]).filter(r=>!hiddenClearedAt||new Date(r.completedAt||r.startedAt||0).getTime()>hiddenClearedAt)}
+
+function buildTraces(){
+ const traces=[];
+ savedRuns().forEach((r,i)=>{if((r.path||[]).length>1)traces.push({id:r.id,label:`${r.id}${r.pairId?" "+r.pairId:""} ${r.support==="Yes"?"AMR":"Manual"}${r.rfid&&r.rfid!=="No"?" +RFID":""}`,path:r.path,color:COLORS[i%COLORS.length],done:true,live:false,support:r.support});});
+ const a=activeRun();
+ if(a&&a.active&&a.path&&a.path.length>0&&(!hiddenClearedAt||new Date(a.updatedAt||0).getTime()>hiddenClearedAt))
+   traces.push({id:a.runId||"LIVE",label:`${a.runId}${a.pairId?" "+a.pairId:""} ${a.support==="Yes"?"AMR":"Manual"} LIVE`,path:a.path,color:"#7B2D8B",done:false,live:true,support:a.support});
+ else if(localTrace.length>1)
+   traces.push({id:"MONITOR",label:"Monitor trace",path:localTrace,color:"#7B2D8B",done:false,live:true,support:"?"});
+ return traces;
+}
+
+// last two traces (by recency) are the default-visible ones: live run + previous run
+function defaultVisibleSet(traces){const s=new Set();const n=traces.length;if(n>0)s.add(traces[n-1].id);if(n>1)s.add(traces[n-2].id);return s}
+function isVisible(id,defSet){return Object.prototype.hasOwnProperty.call(userSet,id)?userSet[id]:defSet.has(id)}
+
+function renderRunControls(traces){
+ const sig=traces.map(t=>t.id).join("|");
+ const box=document.getElementById("runToggles");
+ if(sig===lastCtrlSig){ // just refresh checked state, keep DOM
+   const defSet=defaultVisibleSet(traces);
+   traces.forEach(t=>{const cb=document.getElementById("rtc_"+t.id);if(cb)cb.checked=isVisible(t.id,defSet);});
+   return;
+ }
+ lastCtrlSig=sig;
+ const defSet=defaultVisibleSet(traces);
+ if(!traces.length){box.innerHTML="<div class='rt-hint'>No runs yet.</div>";return;}
+ box.innerHTML=traces.slice().reverse().map(t=>
+   `<label class="rt ${t.live?'live':''}"><input id="rtc_${t.id}" type="checkbox" ${isVisible(t.id,defSet)?"checked":""} onchange="toggleRun('${t.id}',this.checked)"><span class="sw" style="background:${t.color}"></span><span class="lab">${t.label}${t.live?" &#128308;":""}</span></label>`
+ ).join("");
+}
+function toggleRun(id,on){userSet[id]=on;draw();}
+
+async function checkRobots(){statusTxt.textContent="Standalone mode — no robot API.";}
+
+async function stopAmr(){statusTxt.textContent="Standalone mode — no robot API.";}
+function clearTrace(){localTrace=[];hiddenClearedAt=Date.now();userSet={};lastCtrlSig="";draw();statusTxt.textContent="Display cleared. Session data is not deleted."}
+
+/* ── Helpers ── */
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();ctx.fill();ctx.stroke();}
+
+function arrowHead(ctx,x1,y1,x2,y2,color,size=9){const dx=x2-x1,dy=y2-y1;if(Math.sqrt(dx*dx+dy*dy)<2)return;const angle=Math.atan2(dy,dx);ctx.save();ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-size*Math.cos(angle-Math.PI/6),y2-size*Math.sin(angle-Math.PI/6));ctx.lineTo(x2-size*Math.cos(angle+Math.PI/6),y2-size*Math.sin(angle+Math.PI/6));ctx.closePath();ctx.fill();ctx.restore();}
+
+function draw(){
+ const c=canvas,ctx=c.getContext("2d");
+ const W=c.width,H=c.height;
+ ctx.clearRect(0,0,W,H);
+
+ /* Background */
+ ctx.fillStyle="#f8fafc";ctx.fillRect(0,0,W,H);
+
+ /* Grid */
+ ctx.strokeStyle="#e2e8f0";ctx.lineWidth=1;
+ for(let x=0;x<=W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+ for(let y=0;y<=H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+ const cfg=getConfig();
+ const sm=cfg.stationMap||{};
+ const dm=cfg.deliveryMap||{};
+ const allTraces=buildTraces();
+ renderRunControls(allTraces);
+ const defSet=defaultVisibleSet(allTraces);
+ const traces=allTraces.filter(t=>isVisible(t.id,defSet));
+
+ /* Collect points for bounding box — stations + only VISIBLE paths so the view zooms in */
+ const stPts=Object.values(sm).filter(s=>s.x!=null);
+ const dlPts=Object.values(dm).filter(s=>s.x!=null);
+ const pathPts=traces.flatMap(t=>(t.path||[]).filter(p=>p.x!=null&&p.y!=null));
+ const allPts=[...stPts,...dlPts,...pathPts];
+
+ if(!allPts.length){
+   ctx.fillStyle="#aaa";ctx.font="15px Figtree,Segoe UI,Arial";ctx.textAlign="center";
+   ctx.fillText("No station data — configure station coordinates.",W/2,H/2);return;
+ }
+
+ let mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity;
+ allPts.forEach(p=>{if(p.x<mnX)mnX=p.x;if(p.x>mxX)mxX=p.x;if(p.y<mnY)mnY=p.y;if(p.y>mxY)mxY=p.y;});
+ const rngX=mxX-mnX||1,rngY=mxY-mnY||1;
+ const pad=70;
+ /* Independent X/Y scaling fills the whole canvas — layout is illustrative, not to scale */
+ const scX=(W-pad*2)/rngX;
+ const scY=(H-pad*2)/rngY;
+ const ox=pad-scX*mnX;
+ const oy=(H-pad)+scY*mnY;      /* y-flip: real y+ = up, canvas y+ = down */
+ const px=rx=>ox+scX*rx;
+ const py=ry=>oy-scY*ry;
+
+ /* Draw faint aisle lines between stations */
+ ctx.save();
+ ctx.strokeStyle="#d0ddf0";ctx.lineWidth=18;ctx.lineCap="round";ctx.setLineDash([0,0]);
+ ctx.globalAlpha=0.35;
+ const stArr=Object.values(sm);
+ for(let i=0;i<stArr.length;i++)for(let j=i+1;j<stArr.length;j++){
+   ctx.beginPath();ctx.moveTo(px(stArr[i].x),py(stArr[i].y));ctx.lineTo(px(stArr[j].x),py(stArr[j].y));ctx.stroke();
+ }
+ dlPts.forEach(d=>stArr.forEach(s=>{ctx.beginPath();ctx.moveTo(px(d.x),py(d.y));ctx.lineTo(px(s.x),py(s.y));ctx.stroke();}));
+ ctx.restore();
+
+ /* Draw path traces */
+ traces.forEach((t)=>{
+   const pts=(t.path||[]).filter(p=>p.x!=null&&p.y!=null);
+   if(pts.length<2)return;
+   ctx.save();
+   ctx.strokeStyle=t.color;ctx.lineWidth=t.done?2.5:3.5;ctx.globalAlpha=t.done?0.72:1.0;
+   ctx.beginPath();
+   pts.forEach((p,i)=>{if(i===0)ctx.moveTo(px(p.x),py(p.y));else ctx.lineTo(px(p.x),py(p.y));});
+   ctx.stroke();ctx.restore();
+
+   /* Arrow heads every 15 points + final */
+   for(let i=15;i<pts.length;i+=15) arrowHead(ctx,px(pts[i-1].x),py(pts[i-1].y),px(pts[i].x),py(pts[i].y),t.color);
+   if(pts.length>=2){const L=pts[pts.length-1],P=pts[pts.length-2];arrowHead(ctx,px(P.x),py(P.y),px(L.x),py(L.y),t.color);}
+
+   /* End dot */
+   const lp=pts[pts.length-1];
+   ctx.fillStyle=t.color;ctx.beginPath();ctx.arc(px(lp.x),py(lp.y),t.done?5:8,0,Math.PI*2);ctx.fill();
+   if(!t.done){ctx.strokeStyle="white";ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(lp.x),py(lp.y),8,0,Math.PI*2);ctx.stroke();}
+
+   /* Start label */
+   const fp=pts[0];ctx.fillStyle=t.color;ctx.font="bold 11px Figtree,Segoe UI,Arial";ctx.textAlign="left";
+   ctx.fillText(t.label,px(fp.x)+8,py(fp.y)-6);
+ });
+
+ /* Draw station nodes on top */
+ ctx.font="bold 13px Figtree,Segoe UI,Arial";ctx.textAlign="center";
+ dlPts.forEach(s=>{
+   const x=px(s.x),y=py(s.y);
+   ctx.fillStyle="#FFF4DC";ctx.strokeStyle="#E69F00";ctx.lineWidth=2;
+   rr(ctx,x-46,y-22,92,44,9);
+   ctx.fillStyle="#7a4000";ctx.font="bold 12px Figtree,Segoe UI,Arial";ctx.fillText("Delivery",x,y+5);
+ });
+ Object.entries(sm).forEach(([k,s])=>{
+   const x=px(s.x),y=py(s.y);
+   ctx.fillStyle="#EEF4FF";ctx.strokeStyle="#004791";ctx.lineWidth=2.5;
+   rr(ctx,x-28,y-28,56,56,10);
+   ctx.fillStyle="#004791";ctx.font="bold 22px Figtree,Segoe UI,Arial";ctx.fillText(k,x,y+8);
+ });
+
+ /* Legend */
+ legend.innerHTML=traces.length
+   ?traces.map(t=>`<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;margin-bottom:4px;"><span style="display:inline-block;width:28px;height:5px;background:${t.color};border-radius:3px;"></span>${t.label}</span>`).join("")
+   :"No run traces yet. Start a run to see path data.";
+}
+
+setInterval(draw,1000);draw();
+</script></div></body></html>
