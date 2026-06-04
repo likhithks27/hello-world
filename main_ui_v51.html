@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Warehouse Logistics Learning</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap');
+:root{--blue:#004791;--blue-d:#00305f;--blue-l:#E3F2FD;--orange:#E69F00;--orange-l:#FFF4DC;--green:#009E73;--green-l:#EAF7F1;--red:#D55E00;--red-l:#FDEDE8;--border:#E0E0E0;--text:#1a1a2e;--text2:#555;--r:12px;--rl:16px}
+*{box-sizing:border-box}
+body{font-family:"Figtree","Open Sans","Segoe UI",Arial,sans-serif;background:#f0f4f8;margin:0;color:var(--text)}
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,#004791 0%,#00305f 100%);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hdr h1{color:white;margin:0;font-size:26px;font-weight:700}
+.hdr-sub{color:rgba(255,255,255,.75);font-size:13px;margin:2px 0 0}
+.hdr-nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav-btn{padding:8px 14px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:rgba(255,255,255,.12);color:white;cursor:pointer;font-size:13px;font-weight:500}
+.nav-btn.warn{background:rgba(230,159,0,.7);border-color:transparent}
+/* ── Layout ── */
+.wrap{max-width:1300px;margin:0 auto;padding:24px 24px 48px}
+.card{background:white;border-radius:var(--rl);box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border);padding:22px 26px;margin-bottom:20px}
+.card h2{margin:0 0 16px;font-size:18px}
+/* ── Learning concept cards (like screenshot) ── */
+.learn-sect{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.lc{background:#EEF4FF;border:1px solid #C8D9F5;border-radius:14px;padding:18px 20px}
+.lc h3{margin:0 0 10px;font-size:15px;color:#1a3c6e;display:flex;align-items:center;gap:7px}
+.lc p{margin:0 0 12px;font-size:13px;color:#3a4a6e;line-height:1.55}
+.lc p:last-child{margin-bottom:0}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mi{background:white;border:1px solid #C8D9F5;border-radius:8px;padding:9px 12px;font-size:13px;color:#2a3a5e}
+.mi b{color:#1a3c6e;display:block;margin-bottom:2px}
+.ll{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:10px}
+.ll li{font-size:13px;color:#3a4a6e;line-height:1.5;display:flex;align-items:flex-start;gap:9px}
+.ll .em{font-size:16px;flex-shrink:0;margin-top:1px}
+.ll b{color:#1a3c6e}
+/* ── Phase cards ── */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.phase{border-radius:var(--r);padding:16px 18px;border-left:4px solid}
+.phase.pre{background:var(--blue-l);border-color:var(--blue)}
+.phase.dur{background:var(--orange-l);border-color:var(--orange)}
+.phase.post{background:var(--green-l);border-color:var(--green)}
+.phase h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;opacity:.65;font-weight:700}
+.phase ul{margin:6px 0 0;padding-left:16px;font-size:13px;line-height:1.65;color:#333}
+.phase ul li{margin-bottom:3px}
+/* ── Setup ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.fl{display:flex;flex-direction:column;gap:4px}
+label.lbl{font-weight:600;font-size:14px}
+select,input[type=number],input[type=text]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;background:#fafafa}
+.hint{font-size:12px;color:var(--text2);margin-top:3px}
+.sc-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.sc{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:2px solid var(--border);border-radius:20px;background:#fafafa;cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;user-select:none}
+.sc.chk{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.sc input{display:none}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+/* ── Buttons ── */
+button{padding:10px 18px;border:0;border-radius:8px;background:var(--blue);color:white;cursor:pointer;font-size:14px;font-weight:500}
+button:disabled{background:#bbb;cursor:default}
+.btn-sec{background:#546e7a}.btn-suc{background:var(--green)}.btn-red{background:var(--red)}.btn-warn{background:#b35c00}
+/* ── KPI + Status ── */
+.sbar{padding:11px 16px;border-radius:8px;background:var(--blue-l);font-size:14px;border-left:3px solid var(--blue);margin-bottom:16px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:white;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.kpi b{display:block;font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
+.kpi span{font-size:24px;font-weight:700}
+/* ── Warehouse map ── */
+.map-wrap{background:white;border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 2px 8px rgba(0,0,0,.07);padding:20px 24px;margin-bottom:20px}
+.map-wrap h2{margin:0 0 4px;font-size:18px}
+.map-sub{font-size:13px;color:var(--text2);margin:0 0 14px}
+.manual-layout{position:relative;width:100%;max-width:860px;height:330px;background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;overflow:hidden}
+.manual-node{position:absolute;width:92px;height:70px;border-radius:12px;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;box-shadow:0 2px 6px rgba(0,0,0,.08);transition:all .3s}
+.manual-node.delivery{width:130px;font-size:18px;background:#fff7e0;border-color:var(--orange)}
+.manual-node.inactive{opacity:.3;background:#eee}
+.manual-node.active{background:var(--orange-l);border-color:var(--orange);border-width:3px;animation:pulse 1.5s ease-in-out infinite}
+.manual-node.done{background:var(--green-l);border-color:var(--green)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(230,159,0,.2)}50%{box-shadow:0 0 0 14px rgba(230,159,0,.06)}}
+/* ── Runs table ── */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:#f0f4f8;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);padding:10px 12px;text-align:left;border-bottom:2px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr.running td{background:var(--orange-l)}tr.completed td{background:var(--green-l)}tr.stopped td{background:var(--red-l)}
+.tb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.tb.amr{background:var(--blue-l);color:var(--blue)}.tb.man{background:#F3E5F5;color:#6A1B9A}
+.stb{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
+.stb.pending{background:#f0f4f8;color:var(--text2)}.stb.running{background:var(--orange-l);color:#b35c00}.stb.completed{background:var(--green-l);color:#007a58}.stb.stopped{background:var(--red-l);color:var(--red)}
+.sp{display:inline-block;padding:2px 8px;border-radius:10px;background:#f0f4f8;font-size:12px;margin:2px;font-weight:600}
+.sp.del{background:var(--orange-l);color:#b35c00}
+.pb{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#e8f0fe;color:#1a56db;margin-left:5px;font-weight:600;vertical-align:middle}
+.rfb{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;background:#e6f7ee;color:#0a7d4f;margin-left:6px;font-weight:700;vertical-align:middle}
+.rtb{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:middle}
+.rtb.optimised{background:#e6f7ee;color:#0a7d4f}.rtb.unoptimised{background:#fdecea;color:#b3261e}
+.run-tip{background:var(--blue-l);border-radius:8px;padding:10px 14px;font-size:13px;color:#1a3c6e;margin-bottom:14px;border-left:3px solid var(--blue)}
+/* ── Active panel ── */
+.ap{background:white;border-radius:var(--rl);box-shadow:0 2px 8px rgba(0,0,0,.07);border:1.5px solid var(--border);overflow:hidden;margin-bottom:20px}
+.ap.expanded{box-shadow:0 8px 32px rgba(0,114,178,.18);border-color:var(--blue);border-width:2.5px;position:sticky;top:10px;z-index:10}
+.ap-head{background:linear-gradient(135deg,#f0f4f8,#e8f0f7);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.ap-title{font-size:16px;font-weight:700}.ap-elapsed{font-size:13px;color:var(--text2)}
+.ig{display:grid;grid-template-columns:repeat(3,1fr)}
+.ig-cell{padding:12px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}.ig-cell:nth-child(3n){border-right:none}
+.ig-cell b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);margin-bottom:3px}
+.ig-cell span{font-size:15px;font-weight:600}
+.ib{padding:18px 22px;text-align:center}
+.big-inst{font-size:22px;font-weight:700;margin:0 0 14px}
+.obs-tip{font-size:13px;color:#555;background:#fffbf0;border:1px solid #ffe8a0;border-radius:8px;padding:8px 14px;margin-bottom:14px;display:inline-block}
+.ap-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+/* ── Session data ── */
+pre{background:#0d1117;color:#79e8a2;padding:14px;border-radius:10px;overflow:auto;max-height:260px;white-space:pre-wrap;font-size:13px}
+.hidden-during-run{display:none!important}
+</style></head>
+<body>
+<div class="hdr">
+  <div><h1>Warehouse Logistics Learning</h1></div>
+  <div class="hdr-nav">
+    <button class="nav-btn" onclick="window.open('/wheelme-settings-v51','_blank')">AMR Settings</button>
+    <button class="nav-btn" onclick="window.open('/warehouse-logistics-analytics-v51','_blank')">Analytics</button>
+    <button class="nav-btn" onclick="window.open('/warehouse-logistics-live-v51','_blank')">Live Monitor</button>
+    <button class="nav-btn" onclick="refreshPositionsFromApi()">Refresh Stations</button>
+    <button class="nav-btn warn" onclick="newSession()">New Session</button>
+  </div>
+</div>
+<div class="wrap">
+
+<!-- ── CONCEPT CARDS (row 1) ── -->
+<div class="learn-sect">
+  <div class="lc">
+    <h3>&#127891; Picking Method</h3>
+    <p>Each session creates small assembly orders. The method changes how required parts are grouped into runs.</p>
+    <div class="mg">
+      <div class="mi"><b>By Order</b>One assembly order per run; simple and accurate.</div>
+      <div class="mi"><b>Batch Picking</b>Groups the same part across orders; faster but needs sorting.</div>
+      <div class="mi"><b>Kitting</b>Collects parts into ready-to-use kits before assembly.</div>
+      <div class="mi"><b>Sequencing</b>Picks parts in the exact line-consumption order.</div>
+    </div>
+  </div>
+  <div class="lc">
+    <h3>&#9654; Levels of Digitalisation</h3>
+    <p>This digital service has two parts: <b>AMR navigation</b> (this tool) and <b>RFID pick verification</b> (teammate's sensor, simulated here).</p>
+    <ul class="ll">
+      <li><span class="em">&#129302;</span><div><b>AMR auto:</b> the robot guides you to each station; the pick button unlocks on arrival.</div></li>
+      <li><span class="em">&#128694;</span><div><b>Manual:</b> navigate using the warehouse map; the AMR is just a cart.</div></li>
+      <li><span class="em">&#128225;</span><div><b>RFID live feedback:</b> each pick is scanned and confirmed correct or incorrect on screen.</div></li>
+      <li><span class="em">&#128225;</span><div><b>RFID no feedback:</b> the scan is logged but the operator is not told the result.</div></li>
+      <li><span class="em">&#9995;</span><div><b>No RFID:</b> you self-confirm picks with no scan.</div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── CONCEPT CARDS (row 2) ── -->
+<div class="learn-sect">
+  <div class="lc">
+    <h3>&#128202; What to Compare</h3>
+    <p>After paired runs complete, compare these metrics in Analytics:</p>
+    <ul class="ll">
+      <li><span class="em">&#9203;</span><div><b>Total time:</b> how long the full pick sequence took end-to-end.</div></li>
+      <li><span class="em">&#128205;</span><div><b>Travel distance:</b> how far the AMR moved between stations (from Live Monitor path data).</div></li>
+      <li><span class="em">&#128260;</span><div><b>Decision load:</b> in manual mode, how much time was spent finding the next station vs. actually picking.</div></li>
+    </ul>
+  </div>
+  <div class="lc">
+    <h3>&#129514; Make a Prediction</h3>
+    <p>Before creating runs, think through these questions and note your answers:</p>
+    <ul class="ll">
+      <li><span class="em">&#10067;</span><div>Which picking method will produce the <b>shortest total travel distance</b>?</div></li>
+      <li><span class="em">&#10067;</span><div>Will <b>AMR guidance</b> reduce operator errors, time, or both? By how much?</div></li>
+      <li><span class="em">&#10067;</span><div>What happens to efficiency as <b>picking capacity</b> (batch size) increases?</div></li>
+      <li><span class="em">&#10067;</span><div>Which picking method will have the most <b>waiting time at the assembly station</b>?</div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── PHASE CARDS ── -->
+<div class="phases">
+  <div class="phase pre">
+    <h3>Before the Run</h3>
+    <ul>
+      <li>Predict which method is fastest &amp; why.</li>
+      <li>Estimate how much time AMR guidance saves vs. manual.</li>
+      <li>Predict whether RFID live feedback will cut pick errors.</li>
+    </ul>
+  </div>
+  <div class="phase dur">
+    <h3>During the Run</h3>
+    <ul>
+      <li>Where is time spent: moving, waiting, or deciding?</li>
+      <li>Does the AMR route look optimal to you?</li>
+      <li>Note which station takes the longest to reach.</li>
+    </ul>
+  </div>
+  <div class="phase post">
+    <h3>After the Run</h3>
+    <ul>
+      <li>Compare AMR vs. manual times &amp; distances.</li>
+      <li>Did the result match your prediction?</li>
+      <li>What would you change to improve efficiency?</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── KPI ── -->
+<div class="kpi-grid">
+  <div class="kpi"><b>Session started</b><span id="sessionIdLabel" style="font-size:17px">-</span></div>
+  <div class="kpi"><b>Runs Saved</b><span id="runsSaved">0</span></div>
+  <div class="kpi"><b>Verification</b><span id="verifKpi">Off</span></div>
+  <div class="kpi"><b>Status</b><span id="statusKpi">Ready</span></div>
+</div>
+<div id="status" class="sbar">Ready.</div>
+
+<!-- ── SETUP ── -->
+<div id="setupArea" class="card">
+  <h2>Session Setup</h2>
+  <div class="grid2">
+    <div class="fl"><label class="lbl">Picking Method</label><select id="method"><option>By Order</option><option>Batch Picking</option><option>Kitting</option><option>Sequencing</option></select></div>
+    <div class="fl"><label class="lbl">Picking Capacity</label><input id="capacity" type="number" min="1" max="5" value="3"><span class="hint">Components per run. Limited by selected accessible stations.</span></div>
+    <div class="fl"><label class="lbl">Use AMR</label><select id="useAmr" onchange="onUseAmrChange()"><option>Yes</option><option>No</option></select><span class="hint">No = manual-only runs; the AMR is not used.</span></div>
+    <div class="fl"><label class="lbl">AMR auto and manual comparison</label><select id="supportComparison"><option>Yes</option><option>No</option></select><span class="hint">Yes = paired AMR and manual runs with the <b>same</b> component sequence. Available only when Use AMR is Yes.</span></div>
+    <div class="fl"><label class="lbl">Pick Verification (RFID)</label><select id="rfidMode"><option value="No">No RFID (self-confirm)</option><option value="Live">RFID, live feedback</option><option value="Logged">RFID, no feedback</option></select><span class="hint">Simulates the teammate's RFID sensor. Live feedback confirms each pick on screen; no feedback only logs the scan. Compare modes in Analytics.</span></div>
+    <div class="fl"><label class="lbl">Iterations / Learning Runs</label><input id="iterations" type="number" min="1" max="10" value="3"></div>
+    <div class="fl"><label class="lbl">Optimised Route Demo</label><select id="routeDemo"><option value="No">No</option><option value="Yes">Yes</option></select><span class="hint">Yes = also add <b>one extra AMR run</b> that reorders the first run's components into an <b>optimised</b> (shortest-path) order. The other runs stay normal (non-optimised) so you can compare travel distance.</span></div>
+    <div class="fl"><label class="lbl">Delivery Station</label><input id="deliveryStation" value="Delivery_1" disabled><span class="hint">All completed picks go to Delivery Station 1.</span></div>
+    <div class="fl"><label class="lbl">Accessible Stations</label><div class="sc-wrap" id="stationSelector"></div><span class="hint">Deselect stations not in use. Only selected stations appear in runs.</span></div>
+  </div>
+  <div class="actions">
+    <button onclick="createRuns()">Create Learning Runs</button>
+    <button class="btn-sec" onclick="downloadCSV()">Download CSV</button>
+    <button class="btn-sec" onclick="downloadJSON()">Download JSON</button>
+    <button class="btn-sec" onclick="showSessionData()">View Session Data</button>
+  </div>
+</div>
+
+<!-- ── WAREHOUSE MAP ── -->
+<div class="map-wrap">
+  <h2>Warehouse Layout</h2>
+  <p class="map-sub">The active station pulses orange, green means done. Use this map for manual runs.</p>
+  <div id="warehouseMap" class="manual-layout">
+    <div id="stationDelivery" class="manual-node delivery" style="left:70px;top:70px;">Delivery</div>
+    <div id="stationE" class="manual-node" style="left:235px;top:70px;">E</div>
+    <div id="stationD" class="manual-node" style="left:390px;top:70px;">D</div>
+    <div id="stationC" class="manual-node" style="left:545px;top:70px;">C</div>
+    <div id="stationA" class="manual-node" style="left:235px;top:220px;">A</div>
+    <div id="stationB" class="manual-node" style="left:390px;top:220px;">B</div>
+  </div>
+</div>
+
+<!-- ── RUNS TABLE ── -->
+<div id="runsArea" class="card">
+  <h2>Generated Learning Runs</h2>
+  <div class="run-tip">&#128203; Paired runs (same letter badge) share an identical component sequence. The only difference is whether the AMR guides you or not. Complete both to make a fair comparison.</div>
+  <table><thead><tr><th>Run</th><th>Method</th><th>Type</th><th>Sequence</th><th>Status</th><th>Action</th></tr></thead><tbody id="runsBody"></tbody></table>
+</div>
+
+<!-- ── ACTIVE PANEL ── -->
+<div id="activePanel" class="ap">
+  <div class="ap-head">
+    <span class="ap-title">Active Run: <span id="activeRun">-</span></span>
+    <span class="ap-elapsed">Elapsed: <strong id="elapsed">0</strong>s</span>
+  </div>
+  <div class="ig">
+    <div class="ig-cell"><b>Target</b><span id="currentTarget">-</span></div>
+    <div class="ig-cell"><b>Component</b><span id="currentComponent">-</span></div>
+    <div class="ig-cell"><b>Position ID</b><span id="currentPositionId">-</span></div>
+    <div class="ig-cell"><b>Robot State</b><span id="robotState">-</span></div>
+    <div class="ig-cell"><b>Coordinates</b><span id="robotCoords">-</span></div>
+    <div class="ig-cell"><b>Arrival</b><span id="arrivalStatus">-</span></div>
+  </div>
+  <div class="ib">
+    <div class="obs-tip" id="obsTip">&#128064; Where does time go: moving to the station, waiting for the AMR, or making the pick decision?</div>
+    <div class="big-inst" id="instruction">Create and start a run to begin.</div>
+    <div class="ap-btns">
+      <button id="advanceBtn" class="btn-suc" onclick="advance()" disabled>Picked, next</button>
+      <button class="btn-red" onclick="stopRun()">Stop Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPLETION PANEL ── -->
+<div id="completionPanel" class="card" style="display:none;text-align:center;border:2px solid var(--green);background:var(--green-l)">
+  <h2 style="justify-content:center">&#127881; All runs complete!</h2>
+  <p class="hint" style="font-size:14px;margin-bottom:6px">You finished <strong><span id="doneCount">0</span></strong> runs this session. Review your results, save the data so you can compare it later, or start a fresh learning session.</p>
+  <div class="actions" style="justify-content:center">
+    <button class="btn-suc" onclick="window.open('/warehouse-logistics-analytics-v51','_blank')">&#128202; Show Analytics</button>
+    <button onclick="saveData()">&#128190; Save Data</button>
+    <button class="btn-warn" onclick="newSession()">&#128260; Start New Learning</button>
+  </div>
+  <p class="hint" style="margin-top:12px">Save Data downloads a <b>.json</b> snapshot (re-loadable in Analytics to compare across sessions) and a <b>.csv</b> for spreadsheets.</p>
+</div>
+
+<!-- ── SESSION DATA ── -->
+<div id="sessionDataCard" class="card">
+  <h2>Session Data</h2>
+  <p class="hint">Stored in browser localStorage until New Session. Export CSV/JSON for further analysis.</p>
+  <pre id="sessionOutput"></pre>
+</div>
+
+<script>
+const PROXY_URL="/wheelme-v51/proxy",SESSION_KEY="learningSessionV51",CONFIG_KEY="wheelmeConfigV51",LIVE_RUN_KEY="warehouseLiveActiveRunV51",LIVE_MONITOR_STATE_KEY="warehouseLiveMonitorStateV51",ALL_STATIONS=["A","B","C","D","E"],ARRIVAL_TOLERANCE=0.0875;
+const NAME_TO_COMPONENT={"Station_1":"A","Station_2":"B","cobot":"C","Station_4":"D","Station_5":"E"};
+const NAME_TO_DELIVERY={"Delivary_1":"Delivery_1"};
+let currentSession=null,runs=[],activeIndex=null,step=0,startTime=null,uiTimer=null,pathPollTimer=null,currentRunPath=[],waitingForPicked=false,waitingForContinue=false,currentTargetPositionId=null;
+
+function init(){ensureDefaultConfig();buildStationSelector();currentSession=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");if(!currentSession)newSession(false);else{updateSessionLabels();showSessionData();}updateWarehouseAvailability();onUseAmrChange();}
+function onUseAmrChange(){const sel=document.getElementById("useAmr");const sc=document.getElementById("supportComparison");if(!sel||!sc)return;const on=sel.value==="Yes";sc.disabled=!on;sc.style.opacity=on?"1":".5";sc.title=on?"":"Set Use AMR to Yes to enable this comparison.";}
+
+function ensureDefaultConfig(){
+ const existing=JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}");
+ let changed=false;
+ if(!existing.baseUrl){existing.baseUrl="https://sweden.kth.wheelme-web.com"; changed=true;}
+ if(!existing.token && existing.token!==""){existing.token=""; changed=true;}
+ existing.mapId="6";
+ if(!existing.robotId){existing.robotId="7D36702004503133"; changed=true;}
+ if(!existing.stationMap || Object.keys(existing.stationMap).length===0){existing.stationMap={"A":{"positionId":124,"stationName":"Station_1","x":1.2549037,"y":-1.0600168,"theta":0.0087717045},"B":{"positionId":125,"stationName":"Station_2","x":3.1199632,"y":-0.95856994,"theta":0.027964735},"C":{"positionId":119,"stationName":"cobot","x":4.4920683,"y":0.44582638,"theta":-0.0017761972},"D":{"positionId":131,"stationName":"Station_4","x":2.1256135,"y":0.06399634,"theta":-3.1310234},"E":{"positionId":132,"stationName":"Station_5","x":0.28054932,"y":0.14738907,"theta":-3.1292002}}; changed=true;}
+ if(!existing.deliveryMap || !existing.deliveryMap.Delivery_1){existing.deliveryMap={"Delivery_1":{"positionId":133,"stationName":"Delivary_1","x":-1.9992679,"y":0.033076156,"theta":0.051191278}}; changed=true;}
+ if(changed || !localStorage.getItem(CONFIG_KEY))localStorage.setItem(CONFIG_KEY,JSON.stringify(existing));
+}
+
+function buildStationSelector(){
+ const saved=JSON.parse(localStorage.getItem("accessibleStationsV51")||"null")||["A","B","C","D","E"];
+ const wrap=document.getElementById("stationSelector");wrap.innerHTML="";
+ ALL_STATIONS.forEach(s=>{
+   const lbl=document.createElement("label");
+   lbl.className="sc"+(saved.includes(s)?" chk":"");
+   lbl.innerHTML=`<input type="checkbox" value="${s}" ${saved.includes(s)?"checked":""} onchange="onStationChange(this,this.parentElement)">${s}`;
+   wrap.appendChild(lbl);
+ });
+}
+function onStationChange(inp,lbl){lbl.classList.toggle("chk",inp.checked);saveAccessibleStations();updateWarehouseAvailability();}
+function selectedStations(){return [...document.querySelectorAll("#stationSelector input:checked")].map(x=>x.value)}
+function saveAccessibleStations(){localStorage.setItem("accessibleStationsV51",JSON.stringify(selectedStations()))}
+function updateWarehouseAvailability(){
+ const selected=selectedStations();
+ ALL_STATIONS.forEach(s=>{const el=document.getElementById("station"+s);if(el)el.classList.toggle("inactive",!selected.includes(s));});
+}
+
+async function refreshPositionsFromApi(){const cfg=getConfig();if(!cfg.token){setStatus("Add token in AMR Settings first.");return false}try{const data=await proxy("positions",{});if(!Array.isArray(data)){setStatus("Positions API did not return an array.");return false}cfg.stationMap=cfg.stationMap||{};cfg.deliveryMap=cfg.deliveryMap||{};data.forEach(p=>{const comp=NAME_TO_COMPONENT[p.name],del=NAME_TO_DELIVERY[p.name];if(comp)cfg.stationMap[comp]={positionId:p.id,stationName:p.name,x:p.position.x,y:p.position.y,theta:p.position.theta};if(del)cfg.deliveryMap[del]={positionId:p.id,stationName:p.name,x:p.position.x,y:p.position.y,theta:p.position.theta};});cfg.mapId="6";localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));setStatus("Station coordinates refreshed from AMR positions API.");return true}catch(e){setStatus("Could not refresh station coordinates: "+String(e));return false}}
+
+function setRunView(active){
+ ["setupArea","runsArea","sessionDataCard"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle("hidden-during-run",active);});
+ const panel=document.getElementById("activePanel");if(panel)panel.classList.toggle("expanded",active);
+ const tip=document.getElementById("obsTip");if(tip)tip.style.display=active?"inline-block":"none";
+}
+
+function pad2(n){return String(n).padStart(2,"0")}
+function makeSessionId(d){return "S"+d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"_"+pad2(d.getHours())+pad2(d.getMinutes())+pad2(d.getSeconds())}
+function fmtSid(sid){const m=/^S(\d{4})-(\d{2})-(\d{2})_(\d{2})(\d{2})/.exec(sid||"");return m?`${m[2]}-${m[3]} ${m[4]}:${m[5]}`:(sid||"-")}
+function niceDate(iso){try{return new Date(iso).toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return "-"}}
+function newSession(confirmFirst=true){if(confirmFirst&&!confirm("Start a new session? This clears generated runs and saved session data."))return;const d=new Date();currentSession={sessionId:makeSessionId(d),dateLabel:d.toLocaleString(),createdAt:d.toISOString(),savedRuns:[]};localStorage.setItem(SESSION_KEY,JSON.stringify(currentSession));runs=[];activeIndex=null;step=0;currentRunPath=[];waitingForPicked=false;waitingForContinue=false;currentTargetPositionId=null;clearInterval(uiTimer);clearInterval(pathPollTimer);setRunView(false);resetMap(true);renderRuns();updateSessionLabels();showSessionData();setStatus("New session started.")}
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function sequenceByMethod(method,cap,i){const base=selectedStations();if(base.length===0)return[];if(method==="By Order")return shuffle(base).slice(0,cap);if(method==="Batch Picking"){const pairs=base.map(x=>[x,x]);return shuffle(pairs).flat().slice(0,cap)}if(method==="Kitting"){let seq=shuffle(base);while(seq.length<cap)seq=seq.concat(shuffle(base));return seq.slice(0,cap)}if(method==="Sequencing"){let seq=[...base].sort();if(i%2===1)seq=seq.reverse();while(seq.length<cap)seq=seq.concat(seq);return seq.slice(0,cap)}return shuffle(base).slice(0,cap)}
+
+async function createRuns(){
+ saveAccessibleStations();updateWarehouseAvailability();await refreshPositionsFromApi();
+ const method=document.getElementById("method").value,useAmr=document.getElementById("useAmr").value,comparison=supportComparison.value,
+       rfid=document.getElementById("rfidMode").value,
+       cap=Math.max(1,Math.min(5,Number(capacity.value))),iter=Math.max(1,Math.min(10,Number(iterations.value))),del=deliveryStation.value;
+ if(selectedStations().length===0){alert("Select at least one accessible station/component.");return}
+ const routeDemo=document.getElementById("routeDemo").value;
+ const amrSup=useAmr==="Yes"?"Yes":"No";
+ currentSession.rfidMode=rfid;currentSession.useAmr=useAmr;saveSession();
+ runs=[];
+ if(useAmr==="Yes"&&comparison==="Yes"){
+   // Paired: ONE sequence per iteration, reused for both AMR auto and manual
+   for(let i=0;i<iter;i++){
+     const seq=sequenceByMethod(method,cap,i);
+     const pid="P"+String(i+1).padStart(2,"0");
+     runs.push(makeRun(i*2+1,method,"Yes",[...seq],del,pid,rfid));
+     runs.push(makeRun(i*2+2,method,"No",[...seq],del,pid,rfid));
+   }
+ } else {
+   // Single mode: AMR-only if Use AMR is Yes, otherwise manual-only
+   for(let i=0;i<iter;i++) runs.push(makeRun(i+1,method,amrSup,sequenceByMethod(method,cap,i),del,null,rfid));
+ }
+ // Optimised route demo: add ONE extra run that reorders the first run's components into
+ // shortest-path order. It follows the same Use AMR setting as the rest of the session.
+ if(routeDemo==="Yes"&&runs.length){
+   const cfg=getConfig();const sm=cfg.stationMap||{};
+   const start=(cfg.deliveryMap&&cfg.deliveryMap[del])?cfg.deliveryMap[del]:{x:0,y:0};
+   const base=(runs[0].components||[]).slice();
+   const opt=orderRoute(base,sm,start,false);
+   runs.push(makeRun(runs.length+1,method,amrSup,opt,del,null,rfid,"optimised"));
+ }
+ renderRuns();resetMap(true);
+ const rfTxt=rfid==="Live"?" RFID live feedback is on.":rfid==="Logged"?" RFID logging (no feedback) is on.":"";
+ const baseTxt=useAmr==="No"?"Runs created. Manual-only mode, the AMR is not used.":comparison==="Yes"?"Runs created. Paired runs share the same sequence. Only AMR guidance differs.":"Runs created. AMR-guided runs.";
+ setStatus(routeDemo==="Yes"
+   ? `Added one optimised (shortest-path) run (${runs[runs.length-1].id}) using the same components as ${runs[0].id}. Compare its travel distance in Analytics and the Live Monitor.`+rfTxt
+   : baseTxt+rfTxt);
+}
+
+// Greedy nearest-neighbour ordering (worst=true picks the farthest each step → unoptimised)
+function orderRoute(stations,coords,start,worst){
+ const d2=(a,b)=>{if(!a||!b||a.x==null||b.x==null)return 0;const dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy)};
+ let rem=[...stations],cur=start,order=[];
+ while(rem.length){let pick=rem[0],best=worst?-Infinity:Infinity;rem.forEach(s=>{const dd=d2(cur,coords[s]);if(worst?dd>best:dd<best){best=dd;pick=s}});order.push(pick);cur=coords[pick]||cur;rem=rem.filter(x=>x!==pick);}
+ return order;
+}
+
+function makeRun(num,method,support,components,deliveryStation,pairId=null,rfid="No",routeType=null){
+ return{id:"R"+String(num).padStart(2,"0"),pairId,method,support,rfid,routeType,components,deliveryStation,fullSequence:[...components,deliveryStation],status:"pending",events:[],path:[],startedAt:null,completedAt:null,elapsed:0}
+}
+
+function renderRuns(){
+ const body=document.getElementById("runsBody");body.innerHTML="";
+ runs.forEach((r,i)=>{
+   const isAMR=r.support==="Yes";
+   const seq=r.fullSequence.map(c=>`<span class="sp ${String(c).startsWith('Delivery')?'del':''}">${c}</span>`).join("");
+   const typeBadge=isAMR?`<span class="tb amr">&#129302; AMR guided</span>`:`<span class="tb man">&#128694; Manual</span>`;
+   const rfidBadge=r.rfid==="Live"?`<span class="rfb">&#128225; RFID live</span>`:r.rfid==="Logged"?`<span class="rfb">&#128225; RFID log</span>`:"";
+   const routeBadge=r.routeType?`<span class="rtb ${r.routeType}">${r.routeType==="optimised"?"&#9889; Optimised":"&#128034; Unoptimised"}</span>`:"";
+   const stBadge=`<span class="stb ${r.status}">${r.status}</span>`;
+   const pairBadge=r.pairId?`<span class="pb">${r.pairId}</span>`:"";
+   const action=r.status==="pending"?`<button style="padding:6px 14px;font-size:13px;" onclick="startRun(${i})">&#9654; Start</button>`:stBadge;
+   body.innerHTML+=`<tr class="${r.status}"><td><strong>${r.id}</strong>${pairBadge}</td><td>${r.method}</td><td>${typeBadge}${rfidBadge}${routeBadge}</td><td>${seq}</td><td>${stBadge}</td><td>${action}</td></tr>`;
+ });
+ maybeShowCompletion();
+}
+
+function maybeShowCompletion(){
+ const panel=document.getElementById("completionPanel");if(!panel)return;
+ const allDone=runs.length>0&&activeIndex===null&&runs.every(r=>r.status==="completed"||r.status==="stopped");
+ panel.style.display=allDone?"block":"none";
+ if(allDone){const dc=document.getElementById("doneCount");if(dc)dc.textContent=runs.filter(r=>r.status==="completed").length;}
+}
+
+function saveData(){
+ if(!currentSession||!currentSession.savedRuns.length){alert("No saved runs in this session.");return}
+ downloadJSON();downloadCSV();
+ setStatus("Session saved as JSON + CSV. Load the JSON in Analytics to compare across sessions.");
+}
+
+async function startRun(i){if(activeIndex!==null){alert("Finish or stop the active run first.");return}await refreshPositionsFromApi();activeIndex=i;step=0;startTime=Date.now();currentRunPath=[];waitingForPicked=false;waitingForContinue=false;currentTargetPositionId=null;runs[i].status="running";runs[i].startedAt=new Date().toISOString();runs[i].events=[];runs[i].path=[];currentRunPath=[];publishLiveRun(true);activeRun.textContent=runs[i].id+(runs[i].pairId?" ("+runs[i].pairId+")":"");resetMap(true);setAdvance(false);setRunView(true);clearInterval(uiTimer);uiTimer=setInterval(()=>{if(activeIndex!==null)elapsed.textContent=Math.floor((Date.now()-startTime)/1000)},1000);clearInterval(pathPollTimer);pathPollTimer=setInterval(pollRobotPath,1000);renderRuns();await navigateCurrentStep()}
+
+function setAdvance(enabled,label){const b=document.getElementById("advanceBtn");if(!b)return;b.disabled=!enabled;if(label)b.textContent=label;b.style.display="inline-block";}
+
+function resetMap(clearDone=false){
+ ALL_STATIONS.forEach(s=>{const el=document.getElementById("station"+s);if(el){el.classList.remove("active");if(clearDone)el.classList.remove("done");}});
+ const d=document.getElementById("stationDelivery");if(d){d.classList.remove("active");if(clearDone)d.classList.remove("done");}
+ updateWarehouseAvailability();
+}
+
+function getConfig(){ensureDefaultConfig();const c=JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}");c.mapId="6";return c}
+function run(){return runs[activeIndex]}
+
+async function proxy(action,extra={}){const cfg=getConfig();const r=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,baseUrl:cfg.baseUrl,token:cfg.token,mapId:"6",robotId:cfg.robotId,...extra})});const t=await r.text();try{return JSON.parse(t)}catch(e){return{rawText:t}}}
+
+function getCurrentTarget(){const r=run(),cfg=getConfig(),item=r.fullSequence[step];if(!item)return null;if(String(item).startsWith("Delivery"))return{type:"delivery",component:"Delivery",label:item,map:cfg.deliveryMap?cfg.deliveryMap[item]:null};return{type:"component",component:item,label:`Component ${item}`,map:cfg.stationMap?cfg.stationMap[item]:null}}
+
+async function navigateCurrentStep(){const target=getCurrentTarget();if(!target){completeRun();return}resetMap(false);if(target.type==="component"){const el=document.getElementById("station"+target.component);if(el)el.classList.add("active");currentComponent.textContent=target.component}else{const el=document.getElementById("stationDelivery");if(el)el.classList.add("active");currentComponent.textContent="Delivery";}currentTarget.textContent=target.label;currentPositionId.textContent=target.map?target.map.positionId:"-";currentTargetPositionId=target.map?target.map.positionId:null;arrivalStatus.textContent=run().support==="Yes"?"Waiting for AMR arrival":"Manual mode";waitingForPicked=target.type==="component";waitingForContinue=target.type==="delivery";const lbl=target.type==="component"?"Picked, next":"Complete run";if(run().support==="Yes"){setAdvance(false,lbl);instruction.textContent=target.type==="component"?`AMR moving to ${target.map?target.map.stationName:target.label}. Button unlocks on arrival.`:`AMR moving to ${target.label}. Button unlocks on arrival.`;await navigateAMR(target)}else{if(target.type==="component"){instruction.textContent=`Find Component ${target.component} on the map, collect it, then click Picked, next.`;setAdvance(true,lbl)}else{instruction.textContent=`Deliver to ${target.label}, then click Complete run.`;setAdvance(true,lbl)}}}
+
+async function navigateAMR(target){
+ const cfg=getConfig();
+ if(!cfg.token||!target.map||!target.map.positionId){setStatus("AMR settings or target position missing. Digital-support buttons remain locked.");arrivalStatus.textContent="AMR config missing - locked";return;}
+ try{const data=await proxy("navigate",{positionId:target.map.positionId});console.log(data);setStatus(`Navigate command sent to ${target.label}. Waiting for arrival.`);}catch(e){setStatus("AMR navigation request failed. Digital-support buttons remain locked.");arrivalStatus.textContent="Navigation failed - locked";}
+}
+
+function distanceToTarget(point,target){if(!target||!target.map||point.x===null||point.y===null||target.map.x===undefined||target.map.y===undefined)return Infinity;const dx=Number(point.x)-Number(target.map.x),dy=Number(point.y)-Number(target.map.y);return Math.sqrt(dx*dx+dy*dy)}
+
+// Single merged action: confirm the pick (and RFID scan) then move to the next target,
+// or complete the run when at the delivery step.
+function advance(){
+ if(activeIndex===null)return;
+ const b=document.getElementById("advanceBtn");if(b&&b.disabled)return;
+ const target=getCurrentTarget();if(!target)return;
+ if(target.type==="delivery"){completeRun();return;}
+ const c=target.component;const el=document.getElementById("station"+c);if(el)el.classList.add("done");
+ const tNow=Math.floor((Date.now()-startTime)/1000);
+ run().events.push({type:"component_picked",component:c,station:c,step:step+1,time:tNow,timestamp:new Date().toISOString()});
+ const mode=run().rfid;
+ // RFID simulation (teammate's sensor, not yet integrated, simulated here)
+ if(mode==="Live"||mode==="Logged"){
+   const correct=Math.random()>0.12; // ~88% correct scan
+   run().events.push({type:"rfid_scan",mode,component:c,station:c,step:step+1,result:correct?"correct":"mismatch",time:tNow,timestamp:new Date().toISOString()});
+   if(mode==="Live"){
+     instruction.innerHTML=correct?`&#9989; RFID verified: Component ${c} correct.`:`&#9888;&#65039; RFID mismatch on Component ${c}. Re-pick in a real line.`;
+     setAdvance(false);
+     setTimeout(()=>{if(activeIndex!==null){step++;navigateCurrentStep();}},800);
+     return;
+   }
+ }
+ step++;setAdvance(false);navigateCurrentStep();
+}
+
+function completeRun(){clearInterval(uiTimer);clearInterval(pathPollTimer);const r=run();if(!r)return;r.status="completed";r.completedAt=new Date().toISOString();r.elapsed=Math.floor((Date.now()-startTime)/1000);publishLiveRun(false);r.path=currentRunPath;currentSession.savedRuns.push(JSON.parse(JSON.stringify(r)));saveSession();setAdvance(false);instruction.textContent=`Run ${r.id} complete in ${r.elapsed}s. Open Analytics to compare results.`;arrivalStatus.textContent="-";setStatus(`${r.id} completed and stored in current session.`);activeIndex=null;setRunView(false);renderRuns();showSessionData()}
+
+function stopRun(){if(activeIndex===null)return;clearInterval(uiTimer);clearInterval(pathPollTimer);const r=run();r.status="stopped";r.completedAt=new Date().toISOString();r.elapsed=Math.floor((Date.now()-startTime)/1000);publishLiveRun(false);r.path=currentRunPath;currentSession.savedRuns.push(JSON.parse(JSON.stringify(r)));saveSession();activeIndex=null;setAdvance(false);setRunView(false);renderRuns();showSessionData();setStatus("Run stopped and stored in current session.")}
+
+async function pollRobotPath(){if(activeIndex===null)return;const cfg=getConfig();if(!cfg.token)return;try{const robots=await proxy("robots",{}),list=Array.isArray(robots)?robots:(robots.response||robots),robot=Array.isArray(list)?list.find(r=>r.id===cfg.robotId)||list[0]:null;if(!robot)return;const point={timestamp:new Date().toISOString(),elapsed:Math.floor((Date.now()-startTime)/1000),x:robot.position?robot.position.x:null,y:robot.position?robot.position.y:null,theta:robot.position?robot.position.theta:null,state:robot.state||null,currentPositionId:robot.currentPositionId??null,navigatingToPositionId:robot.navigatingToPositionId??null,lastNavigatedPositionId:robot.lastNavigatedPositionId??null};currentRunPath.push(point);runs[activeIndex].path=currentRunPath;publishLiveRun(true);robotState.textContent=point.state||"-";robotCoords.textContent=point.x===null?"-":`x:${Number(point.x).toFixed(2)}, y:${Number(point.y).toFixed(2)}, θ:${Number(point.theta).toFixed(2)}`;const target=getCurrentTarget();const dist=distanceToTarget(point,target);const arrivedById=target&&target.map&&Number(point.currentPositionId)===Number(target.map.positionId);const arrivedByDistance=dist<=ARRIVAL_TOLERANCE;if(target&&target.map&&(arrivedById||arrivedByDistance)){arrivalStatus.textContent=arrivedById?`AMR arrived by position ID`:`AMR arrived by distance (${dist.toFixed(2)}m)`;if(target.type==="component"&&waitingForPicked){instruction.textContent=`AMR arrived at ${target.map?target.map.stationName:target.label}. Pick Component ${target.component}, then click Picked, next.`;setAdvance(true,"Picked, next")}if(target.type==="delivery"){instruction.textContent=`Arrived at ${target.label}. Click Complete run.`;waitingForContinue=true;setAdvance(true,"Complete run")}}else if(target&&target.map){arrivalStatus.textContent=`Moving. Position: ${point.currentPositionId??"-"}, distance: ${isFinite(dist)?dist.toFixed(2)+"m":"-"}`}updateSessionLabels()}catch(e){console.log("Robot poll failed",e)}}
+
+function publishLiveRun(active){try{if(activeIndex===null)return;const r=runs[activeIndex];localStorage.setItem(LIVE_RUN_KEY,JSON.stringify({active,runId:r.id,pairId:r.pairId||null,support:r.support,method:r.method,sequence:r.fullSequence||[],path:currentRunPath||[],updatedAt:new Date().toISOString()}));localStorage.setItem(LIVE_MONITOR_STATE_KEY,active?"running":"idle");}catch(e){console.log("live publish failed",e);}}
+
+function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(currentSession));updateSessionLabels()}
+function updateSessionLabels(){
+ const sid=document.getElementById("sessionIdLabel");const rs=document.getElementById("runsSaved");const vf=document.getElementById("verifKpi");const sk=document.getElementById("statusKpi");
+ if(sid)sid.textContent=currentSession?niceDate(currentSession.createdAt):"-";
+ if(rs)rs.textContent=currentSession?currentSession.savedRuns.length:"0";
+ if(vf)vf.textContent=currentSession&&currentSession.rfidMode==="Live"?"RFID live":currentSession&&currentSession.rfidMode==="Logged"?"RFID (no feedback)":"Off";
+ if(sk)sk.textContent=activeIndex!==null?"Running":"Ready";
+}
+function _vv(rfid){return rfid==="Live"?"RFID live feedback":rfid==="Logged"?"RFID logged":"none";}
+function _pd(path){let d=0;for(let i=1;i<(path||[]).length;i++){const a=path[i-1],b=path[i];if(a&&b&&a.x!=null&&b.x!=null){const dx=a.x-b.x,dy=a.y-b.y;d+=Math.sqrt(dx*dx+dy*dy);}}return Math.round(d*100)/100;}
+function buildExport(s){if(!s)return null;const runs=(s.savedRuns||[]).map(r=>{const picks=(r.events||[]).filter(e=>e.type==="component_picked").map(e=>{const sc=(r.events||[]).find(x=>x.type==="rfid_scan"&&x.step===e.step);return{component:e.component,atSecond:e.time,rfid:sc?sc.result:null};});return{run:r.id,pair:r.pairId||null,navigation:r.support==="Yes"?"AMR":"Manual",verification:_vv(r.rfid),route:r.routeType==="optimised"?"optimised":"standard",pickingMethod:r.method,components:r.components||[],deliveryStation:r.deliveryStation,sequence:r.fullSequence||[],status:r.status,durationSeconds:r.elapsed||0,travelDistanceMeters:_pd(r.path),startedAt:r.startedAt||null,completedAt:r.completedAt||null,picks,path:(r.path||[]).map(p=>({second:p.elapsed,x:p.x,y:p.y,theta:p.theta,state:p.state}))};});const amr=runs.filter(r=>r.navigation==="AMR"),man=runs.filter(r=>r.navigation==="Manual");const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null;return{session:{id:s.sessionId,startedAt:s.createdAt||null,started:s.dateLabel||null,useAMR:s.useAmr!=="No",verificationMode:_vv(s.rfidMode)},summary:{totalRuns:runs.length,amrRuns:amr.length,manualRuns:man.length,avgDurationSeconds:avg(runs.map(r=>r.durationSeconds).filter(x=>x>0)),avgTravelMeters:avg(runs.map(r=>r.travelDistanceMeters).filter(x=>x>0))},runs};}
+function showSessionData(){document.getElementById("sessionOutput").textContent=JSON.stringify(buildExport(currentSession),null,2)}
+function downloadJSON(){const blob=new Blob([JSON.stringify(buildExport(currentSession),null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`${currentSession.sessionId}.json`;a.click();URL.revokeObjectURL(url)}
+function downloadCSV(){if(!currentSession||!currentSession.savedRuns.length){alert("No saved runs in this session.");return}const ex=buildExport(currentSession);const rows=[["run","pair","navigation","verification","route","pickingMethod","sequence","status","durationSeconds","travelDistanceMeters","pickCount","pathPoints"]];ex.runs.forEach(r=>rows.push([r.run,r.pair||"",r.navigation,r.verification,r.route,r.pickingMethod,r.sequence.join(" > "),r.status,r.durationSeconds,r.travelDistanceMeters,(r.picks||[]).length,(r.path||[]).length]));const csv=rows.map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`${currentSession.sessionId}.csv`;a.click();URL.revokeObjectURL(url)}
+function setStatus(t){document.getElementById("status").textContent=t;const sk=document.getElementById("statusKpi");if(sk&&activeIndex===null)sk.textContent="Ready";}
+init();
+</script>
+</div></body></html>

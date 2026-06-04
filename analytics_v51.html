@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Warehouse Logistics Analytics</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap');
+:root{--blue:#004791;--green:#009E73;--orange:#E69F00;--border:#E0E0E0;--blue-l:#E3F2FD}
+body{font-family:"Figtree","Open Sans","Segoe UI",Arial,sans-serif;background:#f0f4f8;margin:0;padding:24px;color:#1a1a2e}
+.container{max-width:1180px;margin:auto;background:white;padding:24px;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+h1{margin:0 0 4px}
+button{padding:9px 14px;border:0;border-radius:8px;background:var(--blue);color:white;cursor:pointer;font-size:13px;margin:4px}
+.sec{background:#546e7a}
+.sc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.sc{background:var(--blue-l);border-radius:12px;padding:14px 16px;text-align:center}
+.sc b{display:block;font-size:11px;text-transform:uppercase;color:#555;letter-spacing:.4px;margin-bottom:4px}
+.sc span{font-size:22px;font-weight:700}
+.sc.amr{background:#E3F2FD}.sc.man{background:#F3E5F5}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+th{background:var(--blue-l);font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:#555;padding:10px 12px;text-align:left;border-bottom:2px solid var(--border)}
+td{border-bottom:1px solid var(--border);padding:10px 12px}
+tr.amr-row td{background:#EBF5FF}tr.man-row td{background:#F9F0FF}
+pre{background:#0d1117;color:#79e8a2;padding:14px;border-radius:8px;overflow:auto;max-height:340px;white-space:pre-wrap}
+.lc{background:#EEF4FF;border:1px solid #C8D9F5;border-radius:14px;padding:16px 20px;margin:18px 0}
+.lc h3{margin:0 0 10px;font-size:14px;color:#1a3c6e}
+.lc ul{margin:0;padding-left:18px;font-size:13px;color:#3a4a6e;line-height:1.8}
+.lc p{margin:0 0 6px;font-size:13px;color:#3a4a6e}
+.pair-badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#e8f0fe;color:#1a56db;font-weight:600}
+.rfb{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;background:#e6f7ee;color:#0a7d4f;font-weight:700;margin-left:4px}
+h2.sec-h{margin:26px 0 6px;font-size:18px}
+.sec-sub{font-size:13px;color:#555;margin:0 0 12px}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chart-card{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px}
+.chart-card h3{margin:0 0 8px;font-size:14px}
+.chart-card canvas{width:100%;display:block}
+.legend2{font-size:12px;color:#555;margin-top:6px}
+.legend2 span{display:inline-flex;align-items:center;gap:5px;margin-right:14px}
+.legend2 i{width:14px;height:10px;border-radius:3px;display:inline-block}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.mini{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px}
+.mini .mt{font-size:13px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mini canvas{width:100%;display:block;border-radius:8px;border:1px solid var(--border)}
+.mini .ms{font-size:11px;color:#666;margin-top:5px}
+.tl-run{margin-bottom:16px}
+.tl-head{font-size:13px;font-weight:600;margin-bottom:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tl-bar{position:relative;height:34px;background:#eef2f7;border-radius:8px;border:1px solid var(--border)}
+.tl-ev{position:absolute;top:0;height:100%;width:2px;background:#009E73}
+.tl-dot{position:absolute;top:-7px;transform:translateX(-50%);font-size:10px;background:#009E73;color:#fff;border-radius:8px;padding:1px 5px;white-space:nowrap}
+.tl-rfid{position:absolute;bottom:-7px;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;border:2px solid #fff}
+.tl-end{position:absolute;right:0;top:0;height:100%;width:3px;background:#E69F00;border-radius:0 8px 8px 0}
+.tl-scale{position:relative;font-size:11px;color:#888;margin-top:3px;height:14px}
+.file-btn{display:inline-block;padding:9px 14px;border-radius:8px;background:#009E73;color:#fff;cursor:pointer;font-size:13px;margin:4px}
+.file-btn input{display:none}
+.src-tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:10px;background:#ECEFF4;color:#444;font-weight:600;margin-left:4px}
+.run-sel{display:flex;flex-flow:row wrap;gap:8px;margin:6px 0 4px}
+.run-sel label{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border:1px solid var(--border);border-radius:20px;background:#fff;font-size:13px;cursor:pointer}
+.run-sel .sw{width:20px;height:6px;border-radius:3px;display:inline-block}
+.run-sel input{width:15px;height:15px;cursor:pointer}
+.lane{margin-bottom:12px}
+.lane .lh{font-size:12px;margin-bottom:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.track{position:relative;height:26px;background:#eef2f7;border-radius:6px;border:1px solid var(--border)}
+.track .fill{position:absolute;left:0;top:0;height:100%;border-radius:6px 0 0 6px;opacity:.20}
+.track .track-ev{position:absolute;top:0;height:100%;width:2px;transform:translateX(-50%)}
+.track .pt{position:absolute;transform:translateX(-50%);font-size:10px;color:#fff;border-radius:8px;padding:1px 5px;white-space:nowrap}
+.track .pe{position:absolute;top:0;height:100%;width:3px}
+.tl-axis{position:relative;height:16px;font-size:11px;color:#888;margin:2px 0 22px}
+#pathCanvas{width:100%;display:block;border-radius:8px;border:1px solid var(--border);aspect-ratio:1120/520}
+</style></head>
+<body><div class="container">
+<h1>&#128202; Warehouse Logistics Analytics</h1>
+<button onclick="location.href='/warehouse-logistics-learning-v51'">&#8592; Back to Run UI</button>
+<button class="sec" onclick="refresh()">&#8635; Refresh</button>
+<button onclick="saveData()">&#128190; Save Data</button>
+<label class="file-btn">&#128194; Load Saved Session(s)<input type="file" accept="application/json" multiple onchange="onLoadFile(this)"></label>
+<button class="sec" onclick="clearLoaded()">Clear Loaded</button>
+<div id="loadedNote" class="sec-sub"></div>
+
+<div class="lc">
+  <h3>&#128161; Reflection Questions. Use the charts below to answer:</h3>
+  <ul>
+    <li>For each <b>pair</b> (same sequence, AMR vs. manual): how many seconds did AMR guidance save? Is it consistent?</li>
+    <li>Does <b>travel distance</b> differ between AMR and manual runs of the same pair? Why?</li>
+    <li>From the <b>pick timeline</b>: where does time go: travelling between stations or deciding/picking?</li>
+    <li>If you loaded an <b>RFID</b> session: did live feedback change pick accuracy or time vs. the no-RFID session?</li>
+    <li>Which combination of <b>navigation + verification</b> would you recommend for a real warehouse, and why?</li>
+  </ul>
+</div>
+
+<div class="sc-row">
+  <div class="sc"><b>Runs Analysed</b><span id="totalRuns">0</span></div>
+  <div class="sc"><b>Pairs Compared</b><span id="pairCount">0</span></div>
+  <div class="sc amr"><b>Avg Time Saved by AMR</b><span id="timeSaved">-</span></div>
+  <div class="sc man"><b>RFID Pick Accuracy</b><span id="rfidAcc">-</span></div>
+</div>
+
+<h2 class="sec-h">&#128202; AMR vs Manual per pair</h2>
+<p class="sec-sub">Each pair shares the same component sequence; the only difference is whether the AMR guided the picker.</p>
+<div class="charts">
+  <div class="chart-card"><h3>Completion time (s)</h3><canvas id="timeChart" width="540" height="280"></canvas>
+    <div class="legend2"><span><i style="background:#004791"></i>AMR</span><span><i style="background:#CC79A7"></i>Manual</span></div></div>
+  <div class="chart-card"><h3>Travel distance (m)</h3><canvas id="distChart" width="540" height="280"></canvas>
+    <div class="legend2"><span><i style="background:#004791"></i>AMR</span><span><i style="background:#CC79A7"></i>Manual</span></div></div>
+</div>
+
+<h2 class="sec-h">&#128269; Select runs to compare</h2>
+<p class="sec-sub">Choose which runs appear in the timeline and the path plot below. Each run is colour-coded. Tick fewer for clarity, more to compare.</p>
+<div id="runSelector" class="run-sel"></div>
+
+<h2 class="sec-h">&#9201;&#65039; Pick Event Timelines <label style="font-size:13px;font-weight:400;margin-left:10px;cursor:pointer"><input type="checkbox" id="tlOverlay" onchange="refresh()" style="vertical-align:middle"> overlay on one axis</label></h2>
+<p class="sec-sub">All selected runs share <b>one uniform time axis</b>, so a longer bar means a longer run. Coloured dots = picks (RFID result shown as a small &#128994; correct / &#128308; mismatch dot); the dark tick = end/delivery.</p>
+<div id="timelines"></div>
+<div id="tlAxis" class="tl-axis"></div>
+
+<h2 class="sec-h">&#128506;&#65039; Path Plot <span style="font-size:13px;font-weight:400;color:#555">selected runs overlaid, with direction arrows and pick points</span></h2>
+<p class="sec-sub">Selected runs are drawn together on one large map for direct route comparison.</p>
+<div class="chart-card"><canvas id="pathCanvas" width="1120" height="520"></canvas><div id="pathLegend" class="legend2" style="margin-top:8px"></div></div>
+
+<h2 class="sec-h">Run Summary <span style="font-size:13px;font-weight:400;color:#555">blue rows = AMR guided, purple rows = manual</span></h2>
+<table id="summary"></table>
+
+<h2 class="sec-h">Session Data (raw JSON)</h2>
+<pre id="raw"></pre>
+
+<script>
+const SESSION_KEY="learningSessionV51",LOADED_KEY="analyticsLoadedV51";
+function _dl(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+function _vv(rfid){return rfid==="Live"?"RFID live feedback":rfid==="Logged"?"RFID logged":"none";}
+function _pd(path){let d=0;for(let i=1;i<(path||[]).length;i++){const a=path[i-1],b=path[i];if(a&&b&&a.x!=null&&b.x!=null){const dx=a.x-b.x,dy=a.y-b.y;d+=Math.sqrt(dx*dx+dy*dy);}}return Math.round(d*100)/100;}
+function buildExport(s){if(!s)return null;const runs=(s.savedRuns||[]).map(r=>{const picks=(r.events||[]).filter(e=>e.type==="component_picked").map(e=>{const sc=(r.events||[]).find(x=>x.type==="rfid_scan"&&x.step===e.step);return{component:e.component,atSecond:e.time,rfid:sc?sc.result:null};});return{run:r.id,pair:r.pairId||null,navigation:r.support==="Yes"?"AMR":"Manual",verification:_vv(r.rfid),route:r.routeType==="optimised"?"optimised":"standard",pickingMethod:r.method,components:r.components||[],deliveryStation:r.deliveryStation,sequence:r.fullSequence||[],status:r.status,durationSeconds:r.elapsed||0,travelDistanceMeters:_pd(r.path),startedAt:r.startedAt||null,completedAt:r.completedAt||null,picks,path:(r.path||[]).map(p=>({second:p.elapsed,x:p.x,y:p.y,theta:p.theta,state:p.state}))};});const amr=runs.filter(r=>r.navigation==="AMR"),man=runs.filter(r=>r.navigation==="Manual");const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null;return{session:{id:s.sessionId,startedAt:s.createdAt||null,started:s.dateLabel||null,useAMR:s.useAmr!=="No",verificationMode:_vv(s.rfidMode)},summary:{totalRuns:runs.length,amrRuns:amr.length,manualRuns:man.length,avgDurationSeconds:avg(runs.map(r=>r.durationSeconds).filter(x=>x>0)),avgTravelMeters:avg(runs.map(r=>r.travelDistanceMeters).filter(x=>x>0))},runs};}
+function saveData(){const s=JSON.parse(localStorage.getItem("learningSessionV51")||"null");if(!s||!s.savedRuns||!s.savedRuns.length){alert("No saved runs in this session yet. Complete a run first.");return;}const ex=buildExport(s);_dl(s.sessionId+".json",JSON.stringify(ex,null,2),"application/json");const rows=[["run","pair","navigation","verification","route","pickingMethod","sequence","status","durationSeconds","travelDistanceMeters","pickCount","pathPoints"]];ex.runs.forEach(r=>rows.push([r.run,r.pair||"",r.navigation,r.verification,r.route,r.pickingMethod,r.sequence.join(" > "),r.status,r.durationSeconds,r.travelDistanceMeters,(r.picks||[]).length,(r.path||[]).length]));_dl(s.sessionId+".csv",rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),"text/csv");}
+function dist(a,b){if(!a||!b||a.x==null||a.y==null||b.x==null||b.y==null)return 0;const dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy)}
+function pathDist(path){let d=0;for(let i=1;i<path.length;i++)d+=dist(path[i-1],path[i]);return d}
+function avgNum(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0}
+function fmt(n){return (Math.round(n*10)/10).toFixed(1)}
+function sessLabel(sid){const m=/^S(\d{4})-(\d{2})-(\d{2})_(\d{2})(\d{2})/.exec(sid||"");return m?`${m[2]}-${m[3]} ${m[4]}:${m[5]}`:(sid||"loaded").slice(-6)}
+function arrowHead(ctx,x1,y1,x2,y2,color,size){size=size||6;const dx=x2-x1,dy=y2-y1;if(Math.sqrt(dx*dx+dy*dy)<2)return;const ang=Math.atan2(dy,dx);ctx.save();ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-size*Math.cos(ang-Math.PI/6),y2-size*Math.sin(ang-Math.PI/6));ctx.lineTo(x2-size*Math.cos(ang+Math.PI/6),y2-size*Math.sin(ang+Math.PI/6));ctx.closePath();ctx.fill();ctx.restore();}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();ctx.fill();ctx.stroke();}
+
+function curSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||"null")}catch(e){return null}}
+function loadedSessions(){try{return JSON.parse(localStorage.getItem(LOADED_KEY)||"[]")}catch(e){return[]}}
+function allRunsWithSrc(){
+ const out=[];const cs=curSession();
+ if(cs&&cs.savedRuns)cs.savedRuns.forEach(r=>out.push(Object.assign({},r,{_sid:cs.sessionId,_src:"current"})));
+ loadedSessions().forEach(s=>(s.savedRuns||[]).forEach(r=>out.push(Object.assign({},r,{_sid:s.sessionId,_src:sessLabel(s.sessionId)}))));
+ return out;
+}
+// Convert a saved export file (intuitive shape) back to the internal shape used for analysis.
+function fromExport(obj){
+ if(!obj)return null;
+ if(obj.savedRuns)return obj; // already internal (older files)
+ if(!obj.runs||!obj.session)return null;
+ const invNav=v=>v==="AMR"?"Yes":"No";
+ const invVer=v=>/live/i.test(v||"")?"Live":/log/i.test(v||"")?"Logged":"No";
+ const savedRuns=obj.runs.map(r=>{const events=[];(r.picks||[]).forEach((p,i)=>{const step=i+1;events.push({type:"component_picked",component:p.component,station:p.component,step,time:p.atSecond});if(p.rfid)events.push({type:"rfid_scan",component:p.component,station:p.component,step,result:p.rfid,time:p.atSecond});});return{id:r.run,pairId:r.pair||null,support:invNav(r.navigation),rfid:invVer(r.verification),routeType:r.route==="optimised"?"optimised":null,method:r.pickingMethod,components:r.components||[],deliveryStation:r.deliveryStation,fullSequence:r.sequence||[],status:r.status,elapsed:r.durationSeconds||0,startedAt:r.startedAt||null,completedAt:r.completedAt||null,events,path:(r.path||[]).map(p=>({elapsed:p.second,x:p.x,y:p.y,theta:p.theta,state:p.state}))};});
+ return{sessionId:obj.session.id,createdAt:obj.session.startedAt,dateLabel:obj.session.started,rfidMode:invVer(obj.session.verificationMode),useAmr:obj.session.useAMR===false?"No":"Yes",savedRuns};
+}
+function onLoadFile(input){[...input.files].forEach(f=>{const rd=new FileReader();rd.onload=e=>{try{const internal=fromExport(JSON.parse(e.target.result));if(!internal||!internal.savedRuns){alert("That file is not a saved session.");return}const arr=loadedSessions();if(!arr.find(s=>s.sessionId===internal.sessionId)){arr.push(internal);localStorage.setItem(LOADED_KEY,JSON.stringify(arr));}refresh();}catch(err){alert("Could not parse session JSON: "+err)}};rd.readAsText(f)});input.value="";}
+function clearLoaded(){localStorage.removeItem(LOADED_KEY);refresh();}
+
+function buildPairs(runs){
+ const m={};
+ runs.forEach(r=>{const key=r._sid+"|"+(r.pairId||r.id);if(!m[key])m[key]={pairId:r.pairId||r.id,src:r._src,method:r.method};if(r.support==="Yes")m[key].amr=r;else m[key].man=r;});
+ return Object.values(m);
+}
+
+function drawGroupedBars(cid,pairs,fa,fb){
+ const cv=document.getElementById(cid),ctx=cv.getContext("2d"),W=cv.width,H=cv.height;
+ ctx.clearRect(0,0,W,H);
+ const padL=42,padB=44,padT=14,padR=12,plotW=W-padL-padR,plotH=H-padT-padB;
+ if(!pairs.length){ctx.fillStyle="#999";ctx.font="14px Figtree,Segoe UI";ctx.textAlign="center";ctx.fillText("No completed pairs yet.",W/2,H/2);return;}
+ let max=0;pairs.forEach(p=>{max=Math.max(max,fa(p)||0,fb(p)||0)});max=(max||1)*1.18;
+ ctx.fillStyle="#888";ctx.font="10px Figtree,Segoe UI";ctx.textAlign="right";
+ for(let g=0;g<=4;g++){const v=max*g/4,y=padT+plotH-plotH*g/4;ctx.fillText(v.toFixed(0),padL-5,y+3);ctx.strokeStyle="#eef0f3";ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+plotW,y);ctx.stroke();}
+ ctx.strokeStyle="#ccc";ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL,padT+plotH);ctx.lineTo(padL+plotW,padT+plotH);ctx.stroke();
+ const n=pairs.length,gw=plotW/n,bw=Math.min(24,gw/3.2);
+ pairs.forEach((p,i)=>{const cx=padL+gw*i+gw/2,a=fa(p)||0,b=fb(p)||0,ah=plotH*a/max,bh=plotH*b/max;
+  ctx.fillStyle="#004791";ctx.fillRect(cx-bw-2,padT+plotH-ah,bw,ah);
+  ctx.fillStyle="#CC79A7";ctx.fillRect(cx+2,padT+plotH-bh,bw,bh);
+  ctx.textAlign="center";ctx.font="bold 9px Figtree,Segoe UI";
+  ctx.fillStyle="#004791";ctx.fillText(a.toFixed(0),cx-bw/2-2,padT+plotH-ah-3);
+  ctx.fillStyle="#CC79A7";ctx.fillText(b.toFixed(0),cx+bw/2+2,padT+plotH-bh-3);
+  ctx.fillStyle="#444";ctx.font="10px Figtree,Segoe UI";ctx.fillText(p.label,cx,padT+plotH+14);
+  if(p.src&&p.src!=="current"){ctx.fillStyle="#999";ctx.font="9px Figtree,Segoe UI";ctx.fillText(p.src,cx,padT+plotH+26);}
+ });
+}
+
+function drawMiniPath(cv,r,cfg){
+ const ctx=cv.getContext("2d"),W=cv.width,H=cv.height;
+ ctx.clearRect(0,0,W,H);ctx.fillStyle="#f8fafc";ctx.fillRect(0,0,W,H);
+ const sm=cfg.stationMap||{},dm=cfg.deliveryMap||{};
+ const pts=(r.path||[]).filter(p=>p.x!=null&&p.y!=null);
+ const stPts=Object.values(sm).filter(s=>s.x!=null),dlPts=Object.values(dm).filter(s=>s.x!=null);
+ const all=[...stPts,...dlPts,...pts];if(!all.length){ctx.fillStyle="#aaa";ctx.font="12px Figtree,Segoe UI";ctx.textAlign="center";ctx.fillText("No data",W/2,H/2);return;}
+ let mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity;
+ all.forEach(p=>{mnX=Math.min(mnX,p.x);mxX=Math.max(mxX,p.x);mnY=Math.min(mnY,p.y);mxY=Math.max(mxY,p.y)});
+ const rngX=mxX-mnX||1,rngY=mxY-mnY||1,pad=26,sc=Math.min((W-pad*2)/rngX,(H-pad*2)/rngY);
+ const ox=pad+(W-pad*2-sc*rngX)/2-sc*mnX,oy=(H-pad)+sc*mnY;
+ const px=x=>ox+sc*x,py=y=>oy-sc*y;
+ ctx.textAlign="center";
+ dlPts.forEach(s=>{ctx.fillStyle="#E69F00";ctx.beginPath();ctx.arc(px(s.x),py(s.y),6,0,7);ctx.fill();});
+ Object.entries(sm).forEach(([k,s])=>{ctx.fillStyle="#d3e0f2";ctx.beginPath();ctx.arc(px(s.x),py(s.y),10,0,7);ctx.fill();ctx.fillStyle="#1a3c6e";ctx.font="bold 11px Figtree,Segoe UI";ctx.fillText(k,px(s.x),py(s.y)+4);});
+ const col=r.support==="Yes"?"#004791":"#CC79A7";
+ if(pts.length>1){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(px(p.x),py(p.y)):ctx.moveTo(px(p.x),py(p.y)));ctx.stroke();
+  for(let i=10;i<pts.length;i+=10)arrowHead(ctx,px(pts[i-1].x),py(pts[i-1].y),px(pts[i].x),py(pts[i].y),col,6);}
+ (r.events||[]).filter(e=>e.type==="component_picked").forEach(e=>{let best=null,bd=Infinity;pts.forEach(p=>{const d=Math.abs((p.elapsed||0)-(e.time||0));if(d<bd){bd=d;best=p}});if(best){ctx.fillStyle="#009E73";ctx.beginPath();ctx.arc(px(best.x),py(best.y),4,0,7);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();}});
+}
+
+// ── Run selection (drives timelines + path plot) ──
+const RUNCOLORS=["#004791","#D55E00","#009E73","#CC79A7","#E69F00","#56B4E9","#7B2D8B","#8B4513"];
+let analSel={};
+function runKey(r){return (r._sid||"")+"|"+r.id}
+function isSel(key,idx){return Object.prototype.hasOwnProperty.call(analSel,key)?analSel[key]:idx<2}
+function colorFor(idx){return RUNCOLORS[idx%RUNCOLORS.length]}
+function toggleSel(key,on){analSel[key]=on;refresh();}
+
+function renderSelector(done){
+ const box=document.getElementById("runSelector");
+ if(!done.length){box.innerHTML="<span class='sec-sub'>No completed runs yet.</span>";return;}
+ box.innerHTML=done.map(r=>{const key=runKey(r);const typ=r.support==="Yes"?"&#129302;":"&#128694;";const rt=r.routeType==="optimised"?" &#9889;":"";const srct=r._src&&r._src!=="current"?" "+r._src:"";return `<label><input type="checkbox" ${isSel(key,r._ci)?"checked":""} onchange="toggleSel('${key}',this.checked)"><span class="sw" style="background:${colorFor(r._ci)}"></span>${typ} ${r.id}${r.pairId?" "+r.pairId:""}${rt}${srct}</label>`;}).join("");
+}
+
+function renderTimelines(done){
+ const box=document.getElementById("timelines"),axis=document.getElementById("tlAxis");
+ const sel=done.filter(r=>isSel(runKey(r),r._ci));
+ if(!sel.length){box.innerHTML="<p class='sec-sub'>Select one or more runs above.</p>";axis.innerHTML="";return;}
+ const maxT=Math.max(1,...sel.map(r=>Number(r.elapsed||0)));
+ const overlay=document.getElementById("tlOverlay").checked;
+ const markersOf=(r,col,off)=>{
+  const picks=(r.events||[]).filter(e=>e.type==="component_picked");
+  const scans=(r.events||[]).filter(e=>e.type==="rfid_scan");
+  return picks.map(e=>{const pct=Math.min(99,100*(e.time||0)/maxT);const scan=scans.find(s=>s.step===e.step);const rf=scan?`<span class="tl-rfid" style="left:${pct}%;background:${scan.result==="correct"?"#009E73":"#D55E00"}"></span>`:"";return `<span class="track-ev" style="left:${pct}%;background:${col}"></span><span class="pt" style="left:${pct}%;top:${off}px;background:${col}">${e.component}·${e.time}s</span>${rf}`;}).join("");
+ };
+ if(overlay){
+  let inner="";
+  sel.forEach((r,k)=>{const col=colorFor(r._ci);inner+=markersOf(r,col,-7-(k%3)*15);const ep=Math.min(100,100*Number(r.elapsed||0)/maxT);inner+=`<span class="pe" style="left:calc(${ep}% - 1px);background:${col}"></span>`;});
+  box.innerHTML=`<div class="track" style="height:${30+Math.min(3,sel.length-1)*15}px">${inner}</div>`+legendHtml(sel);
+ } else {
+  box.innerHTML=sel.map(r=>{const col=colorFor(r._ci);const ep=Math.min(100,100*Number(r.elapsed||0)/maxT);const typ=r.support==="Yes"?"&#129302; AMR":"&#128694; Manual";const rfb=r.rfid&&r.rfid!=="No"?"<span class='rfb'>&#128225;"+(r.rfid==="Logged"?" log":"")+"</span>":"";const rtb=r.routeType==="optimised"?"<span class='rfb'>&#9889; opt</span>":"";const srct=r._src&&r._src!=="current"?`<span class='src-tag'>${r._src}</span>`:"";return `<div class="lane"><div class="lh"><span class="sw" style="display:inline-block;width:18px;height:6px;border-radius:3px;background:${col}"></span>${r.id}${r.pairId?" "+r.pairId:""} ${typ}${rfb}${rtb}${srct} <span style="color:#888">${Number(r.elapsed||0)}s</span></div><div class="track"><span class="fill" style="width:${ep}%;background:${col}"></span>${markersOf(r,col,-7)}<span class="pe" style="left:calc(${ep}% - 1px);background:#333"></span></div></div>`;}).join("");
+ }
+ axis.innerHTML=`<span style="position:absolute;left:0">0s</span><span style="position:absolute;left:50%;transform:translateX(-50%)">${Math.round(maxT/2)}s</span><span style="position:absolute;right:0">${maxT}s</span>`;
+}
+function legendHtml(sel){return "<div class='legend2' style='margin-top:10px'>"+sel.map(r=>`<span><i style="background:${colorFor(r._ci)}"></i>${r.id}${r.pairId?" "+r.pairId:""} ${Number(r.elapsed||0)}s</span>`).join("")+"</div>";}
+
+function drawOverlayPaths(done,cfg){
+ const cv=document.getElementById("pathCanvas"),ctx=cv.getContext("2d"),W=cv.width,H=cv.height;
+ ctx.clearRect(0,0,W,H);ctx.fillStyle="#f8fafc";ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle="#e2e8f0";ctx.lineWidth=1;for(let x=0;x<=W;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=0;y<=H;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+ const legend=document.getElementById("pathLegend");
+ const sel=done.filter(r=>isSel(runKey(r),r._ci)&&(r.path||[]).length>1);
+ const sm=cfg.stationMap||{},dm=cfg.deliveryMap||{};
+ const stPts=Object.values(sm).filter(s=>s.x!=null),dlPts=Object.values(dm).filter(s=>s.x!=null);
+ const all=[...stPts,...dlPts,...sel.flatMap(r=>(r.path||[]).filter(p=>p.x!=null&&p.y!=null))];
+ if(!sel.length||!all.length){ctx.fillStyle="#999";ctx.font="15px Figtree,Segoe UI,Arial";ctx.textAlign="center";ctx.fillText(sel.length?"No path data for the selected runs.":"Select runs above to plot their paths.",W/2,H/2);legend.innerHTML="";return;}
+ let mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity;all.forEach(p=>{mnX=Math.min(mnX,p.x);mxX=Math.max(mxX,p.x);mnY=Math.min(mnY,p.y);mxY=Math.max(mxY,p.y)});
+ const rngX=mxX-mnX||1,rngY=mxY-mnY||1,pad=70,scX=(W-pad*2)/rngX,scY=(H-pad*2)/rngY;
+ const ox=pad-scX*mnX,oy=(H-pad)+scY*mnY,px=x=>ox+scX*x,py=y=>oy-scY*y;
+ const stArr=Object.values(sm);
+ // faint aisle lines between stations and to delivery (like the live monitor)
+ ctx.save();ctx.strokeStyle="#d0ddf0";ctx.lineWidth=16;ctx.lineCap="round";ctx.globalAlpha=0.35;
+ for(let i=0;i<stArr.length;i++)for(let j=i+1;j<stArr.length;j++){ctx.beginPath();ctx.moveTo(px(stArr[i].x),py(stArr[i].y));ctx.lineTo(px(stArr[j].x),py(stArr[j].y));ctx.stroke();}
+ dlPts.forEach(d=>stArr.forEach(s=>{ctx.beginPath();ctx.moveTo(px(d.x),py(d.y));ctx.lineTo(px(s.x),py(s.y));ctx.stroke();}));
+ ctx.restore();
+ // path traces (colour per run) with direction arrows
+ const pickDots=[];
+ sel.forEach(r=>{const col=colorFor(r._ci);const pts=(r.path||[]).filter(p=>p.x!=null&&p.y!=null);if(pts.length<2)return;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.globalAlpha=.9;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(px(p.x),py(p.y)):ctx.moveTo(px(p.x),py(p.y)));ctx.stroke();ctx.globalAlpha=1;for(let i=12;i<pts.length;i+=12)arrowHead(ctx,px(pts[i-1].x),py(pts[i-1].y),px(pts[i].x),py(pts[i].y),col,8);const lp=pts[pts.length-1];ctx.fillStyle=col;ctx.beginPath();ctx.arc(px(lp.x),py(lp.y),5,0,7);ctx.fill();(r.events||[]).filter(e=>e.type==="component_picked").forEach(e=>{let best=null,bd=Infinity;pts.forEach(p=>{const d=Math.abs((p.elapsed||0)-(e.time||0));if(d<bd){bd=d;best=p}});if(best)pickDots.push({x:px(best.x),y:py(best.y),col});});});
+ // station nodes on top (rounded rectangles, like the live monitor)
+ ctx.textAlign="center";
+ dlPts.forEach(s=>{const x=px(s.x),y=py(s.y);ctx.fillStyle="#FFF4DC";ctx.strokeStyle="#E69F00";ctx.lineWidth=2;rr(ctx,x-46,y-20,92,40,9);ctx.fillStyle="#7a4000";ctx.font="bold 12px Figtree,Segoe UI,Arial";ctx.fillText("Delivery",x,y+5);});
+ Object.entries(sm).forEach(([k,s])=>{const x=px(s.x),y=py(s.y);ctx.fillStyle="#EEF4FF";ctx.strokeStyle="#004791";ctx.lineWidth=2.5;rr(ctx,x-26,y-26,52,52,10);ctx.fillStyle="#004791";ctx.font="bold 20px Figtree,Segoe UI,Arial";ctx.fillText(k,x,y+7);});
+ // pick points on top so they stay visible
+ pickDots.forEach(d=>{ctx.fillStyle=d.col;ctx.beginPath();ctx.arc(d.x,d.y,5,0,7);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();});
+ legend.innerHTML=sel.map(r=>`<span><i style="background:${colorFor(r._ci)}"></i>${r.id}${r.pairId?" "+r.pairId:""} ${r.support==="Yes"?"AMR":"Manual"}${r.routeType==="optimised"?" &#9889;":""} · ${pathDist(r.path||[]).toFixed(1)}m</span>`).join("");
+}
+
+function renderSummary(runs){
+ if(!runs.length){summary.innerHTML="<tr><td colspan='9'>No saved runs yet.</td></tr>";return}
+ let html="<tr><th>Run</th><th>Pair</th><th>Source</th><th>Type</th><th>RFID</th><th>Method</th><th>Time (s)</th><th>Dist (m)</th><th>Picks</th></tr>";
+ runs.forEach(r=>{const pairBadge=r.pairId?`<span class='pair-badge'>${r.pairId}</span>`:"";const picks=(r.events||[]).filter(e=>e.type==="component_picked").length;html+=`<tr class="${r.support==="Yes"?"amr-row":"man-row"}"><td>${r.id}</td><td>${pairBadge}</td><td><span class='src-tag'>${r._src}</span></td><td>${r.support==="Yes"?"&#129302; AMR":"&#128694; Manual"}</td><td>${r.rfid&&r.rfid!=="No"?"&#128225;"+(r.rfid==="Logged"?" log":" live"):"-"}</td><td>${r.method}${r.routeType?" · "+r.routeType:""}</td><td>${Number(r.elapsed||0).toFixed(1)}</td><td>${pathDist(r.path||[]).toFixed(2)}</td><td>${picks}</td></tr>`;});
+ summary.innerHTML=html;
+}
+
+function refresh(){
+ const cfg=JSON.parse(localStorage.getItem("wheelmeConfigV51")||"{}");
+ const runs=allRunsWithSrc();
+ raw.textContent=JSON.stringify(buildExport(curSession()),null,2);
+ const ln=loadedSessions();
+ document.getElementById("loadedNote").innerHTML=ln.length?`Comparing current session + ${ln.length} loaded session(s): ${ln.map(s=>sessLabel(s.sessionId)+(s.rfidMode&&s.rfidMode!=="No"?" [RFID]":"")).join(", ")}`:"Showing current session only. Load saved .json files to compare across sessions.";
+ const done=runs.filter(r=>r.status==="completed"||r.status==="stopped");
+ done.forEach((r,i)=>{r._ci=i;});
+ document.getElementById("totalRuns").textContent=done.length;
+ const pairs=buildPairs(done).filter(p=>p.amr&&p.man);
+ document.getElementById("pairCount").textContent=pairs.length;
+ const saves=pairs.map(p=>Number(p.man.elapsed||0)-Number(p.amr.elapsed||0));
+ document.getElementById("timeSaved").textContent=saves.length?fmt(avgNum(saves))+"s":"-";
+ const scans=done.flatMap(r=>(r.events||[]).filter(e=>e.type==="rfid_scan"));
+ document.getElementById("rfidAcc").textContent=scans.length?Math.round(100*scans.filter(s=>s.result==="correct").length/scans.length)+"%":"n/a";
+ const pLab=pairs.map(p=>Object.assign(p,{label:(p.pairId||"")}));
+ drawGroupedBars("timeChart",pLab,p=>Number(p.amr.elapsed||0),p=>Number(p.man.elapsed||0));
+ drawGroupedBars("distChart",pLab,p=>pathDist(p.amr.path||[]),p=>pathDist(p.man.path||[]));
+ renderSelector(done);
+ renderTimelines(done);
+ drawOverlayPaths(done,cfg);
+ renderSummary(done);
+}
+refresh();
+</script></div></body></html>
